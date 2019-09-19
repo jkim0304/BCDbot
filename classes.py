@@ -14,5 +14,5 @@ class Session(object):
 class Player(object):
     def __init__(self, name, s_time):
         self.name = name
-        self.sets = []
+        self.sets = set()
         self.time = s_time
