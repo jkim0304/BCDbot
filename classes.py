@@ -2,11 +2,13 @@ class Session(object):
     def __init__(self, name):
         self.name = name
         self.sets = set()
+        self.banlist = set()
         self.players = []
         self.pick_draft = []
         self.exclusives = []
         self.taken = {}
-        self.banlist = set()
+        self.num_picks = -1
+        self.round_num = 1
         self.curr_player = 0
         self.phase = 0
         self.starting_time = -1

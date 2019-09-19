@@ -2,14 +2,14 @@ import discord
 from discord.ext import commands
 import json
 import time 
-
 import classes
 import utils
 import config as cfg
 
-curr_session = None
-
 bot = commands.Bot(command_prefix='>', description='A bot that manages Block Constructed Drafts.')
+
+#current session
+sess = None 
 
 @bot.event
 async def on_ready():
@@ -23,106 +23,123 @@ async def test(ctx):
 
 @bot.command()
 async def new_session(ctx, session_name: str):
-    global curr_session, phase
-    if curr_session == None or curr_session.phase != 0:
+    global sess, phase
+    if sess == None or sess.phase != 0:
         return
-    #if curr_session: save curr_session to JSON
-    curr_session = classes.Session(session_name)
+    #if sess: save sess to JSON
+    sess = classes.Session(session_name)
     await ctx.send('Made session: ' + session_name)
 
 #Phase 0 commands:
 
 @bot.command()
 async def add_banlist(ctx, *args):
-    global curr_session
-    if curr_session == None or curr_session.phase != 0:
+    global sess
+    if sess == None or sess.phase != 0:
         return
     for arg in args:
-        curr_session.banlist.add(arg)
+        sess.banlist.add(arg)
     await ctx.send('Successfully added to the banlist.')
 
 @bot.command()
 async def set_starting_time(ctx, s_time = int):
-    global curr_session
-    if curr_session.starting_time == -1:
-        for player in curr_session.players:
+    global sess
+    if sess == None or sess.phase != 0:
+        return
+    if sess.starting_time == -1:
+        for player in sess.players:
             player.time = s_time
-    curr_session.starting_time = s_time
+    sess.starting_time = s_time
     await ctx.send('Successfully set starting time.')
 
 @bot.command()
+async def set_num_picks(ctx, n = int):
+    global sess
+    if sess == None or sess.phase != 0:
+        return
+    sess.num_picks = n
+    await ctx.send('Successfully set number of picks.')
+
+@bot.command()
 async def add_players(ctx, *args):
-    global curr_session
-    if curr_session == None or curr_session.phase != 0:
+    global sess
+    if sess == None or sess.phase != 0:
         return
     for arg in args:
-        curr_session.players.append(classes.Player(arg, curr_session.starting_time))
+        sess.players.append(classes.Player(arg, sess.starting_time))
     await ctx.send('Successfully added to the player list.')
 
 @bot.command()
 async def add_sets(ctx, *args):
-    global curr_session
-    if curr_session == None or curr_session.phase != 0:
+    global sess
+    if sess == None or sess.phase != 0:
         return
     for arg in args:
-        curr_session.sets.add(arg)
+        sess.sets.add(arg)
     await ctx.send('Successfully added to the set list.')
     
 #Adds one group of sets which can't be taken with each other
 @bot.command()
 async def add_exclusive(ctx, *args):
-    global curr_session
-    if curr_session == None or curr_session.phase != 0:
+    global sess
+    if sess == None or sess.phase != 0:
         return
-    curr_session.exclusives.append([arg for arg in args])
+    sess.exclusives.append([arg for arg in args])
     await ctx.send('Successfully added new rule to the exclusives list.')
 
 @bot.command()
 async def finish_setup(ctx):
-    global curr_session
+    global sess
     #TODO: add more checks to see if setup was done correctly
-    if curr_session.phase != 0:
+    if sess.phase != 0:
         await ctx.send('Not in setup.')
     else:
-        curr_session.pick_draft = [None] * len(curr_session.players)
-        curr_session.phase = 1
-        curr_session.curr_player = 0
+        sess.pick_draft = [None] * len(sess.players)
+        sess.phase = 1
+        sess.curr_player = 0
         await ctx.send('Beginning pick order draft.')
-        utils.ping_next(curr_session)
+        utils.ping_next(sess)
 
 #Phase 1 commands:
 @bot.command()
 async def choose_position(ctx, pos: int):
-    global curr_session
-    if curr_session == None or curr_session.phase != 1:
+    global sess
+    if sess == None or sess.phase != 1:
         return
-    if curr_session.pick_draft[pos] == None:
-        curr_session.pick_draft[pos] = curr_session.players[curr_session.curr_player].name
-        curr_session.curr_player += 1
-        if curr_session.curr_player == len(curr_session.players):
-            curr_session.phase = 2
-            curr_session.curr_player = 0
+    if sess.pick_draft[pos] == None:
+        sess.pick_draft[pos] = sess.players[sess.curr_player].name
+        sess.curr_player += 1
+        if sess.curr_player == len(sess.players):
+            sess.phase = 2
+            sess.curr_player = 0
             await ctx.send('Beginning set draft.')
-        utils.ping_next(curr_session)
+        utils.ping_next(sess)
     else:
-        await ctx.send(f'Sorry, that position is taken by {curr_session.pick_draft[pos]}.')
+        await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos]}.')
 
 #Phase 2 commands:
 @bot.command()
 async def choose_set(ctx, chosen_set): 
-    global curr_session
-    if curr_session == None or curr_session.phase != 2:
+    global sess
+    if sess == None or sess.phase != 2:
         return
     pindex = utils.ctx_to_pindex(ctx)
-    player = curr_session.players[pindex]
-    if utils.check_legality(curr_session, player, chosen_set):
-        curr_session.taken[chosen_set] = player.name
+    player = sess.players[pindex]
+    if utils.check_legality(sess, player, chosen_set):
+        sess.taken[chosen_set] = player.name
         player.sets.add(chosen_set)
-        curr_session.curr_player += 1
-        if curr_session.curr_player == len(curr_session.players):
-                
+        sess.curr_player += 1
+        if sess.curr_player == len(sess.players):
+            sess.round_num += 1
+            if sess.round_num > sess.num_picks:
+                sess.phase = 3
+                sess.curr_player = -1
+                await ctx.send('Set draft complete. Enjoy your matches!')
+            else:
+                sess.curr_player = 0
+                utils.ping_next(sess)
     else:
-        await ctx.send(f'Sorry, that set is taken by {curr_session.taken[chosen_set]}.')
+        await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set]}.')
     
     
     
