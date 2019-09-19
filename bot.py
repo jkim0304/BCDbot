@@ -103,16 +103,28 @@ async def choose_position(ctx, pos: int):
             curr_session.phase = 2
             curr_session.curr_player = 0
             await ctx.send('Beginning set draft.')
-            utils.ping_next(curr_session)
+        utils.ping_next(curr_session)
     else:
         await ctx.send(f'Sorry, that position is taken by {curr_session.pick_draft[pos]}.')
 
 #Phase 2 commands:
 @bot.command()
-async def choose_set(ctx, set): 
+async def choose_set(ctx, chosen_set): 
     global curr_session
     if curr_session == None or curr_session.phase != 2:
         return
+    pindex = utils.ctx_to_pindex(ctx)
+    player = curr_session.players[pindex]
+    if utils.check_legality(curr_session, player, chosen_set):
+        curr_session.taken[chosen_set] = player.name
+        player.sets.add(chosen_set)
+        curr_session.curr_player += 1
+        if curr_session.curr_player == len(curr_session.players):
+                
+    else:
+        await ctx.send(f'Sorry, that set is taken by {curr_session.taken[chosen_set]}.')
+    
+    
     
 #Phase agnostic commands:
 
