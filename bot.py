@@ -44,9 +44,8 @@ async def set_starting_time(ctx, s_time = int):
     global sess
     if sess == None or sess.phase != 0:
         return
-    if sess.starting_time == -1:
-        for player in sess.players:
-            player.time = s_time
+    for player in sess.players:
+        player.time = s_time
     sess.starting_time = s_time
     await ctx.send('Successfully set starting time.')
 
@@ -89,6 +88,19 @@ async def add_exclusive(ctx, *, arg):
     ex_group = [x.strip() for x in arg.split(',')]
     sess.exclusives.append([s for s in ex_group])
     await ctx.send('Successfully added new rule to the exclusives list.')
+
+@bot.command()
+async def claim_user(ctx, name):
+    global sess
+    if sess == None or sess.phase != 0:
+        return
+    pindex = utils.get_pindex(sess, name)
+    player = sess.players[pindex]
+    if player.uid == -1:
+        player.uid = ctx.author.id
+        await ctx.send(f'Successfully claimed {name}.')
+    else:
+        await ctx.send('Sorry this user has already been claimed.')
 
 @bot.command()
 async def finish_setup(ctx):
