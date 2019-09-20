@@ -1,4 +1,4 @@
-def time_elapsed(player):
+def time_elapsed(session, player):
     """Returns the time elapsed since player's turn began."""
 
 def available_sets(session, player): #TODO: add exclusive groupings so that 'player' is relevant
@@ -17,6 +17,17 @@ def ping_next(session):
     else:
         print('Ping being called in wrong phase.')
 
-def ctx_to_pindex(context):
-    """Takes a context and returns the corresponding player index."""
-    return 0 #TODO 
+def ctx_to_pindex(session, context):
+    """Takes a context and returns the author's player index."""
+    author_id = context.author.id
+    for i, player in enumerate(session.players):
+        if author_id == player.uid:
+            return i
+    return -1
+
+def name_to_pindex(session, name):
+    """Returns name's player index."""
+    for i, player in enumerate(session.players):
+        if name == player.name:
+            return i
+    return -1

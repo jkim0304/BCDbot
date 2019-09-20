@@ -94,7 +94,7 @@ async def claim_user(ctx, name):
     global sess
     if sess == None or sess.phase != 0:
         return
-    pindex = utils.get_pindex(sess, name)
+    pindex = utils.name_to_pindex(sess, name)
     player = sess.players[pindex]
     if player.uid == -1:
         player.uid = ctx.author.id
@@ -138,7 +138,7 @@ async def choose_set(ctx, chosen_set):
     global sess
     if sess == None or sess.phase != 2:
         return
-    pindex = utils.ctx_to_pindex(ctx)
+    pindex = utils.ctx_to_pindex(sess, ctx)
     player = sess.players[pindex]
     if utils.check_legality(sess, player, chosen_set):
         sess.taken[chosen_set] = player.name
