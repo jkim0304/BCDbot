@@ -22,7 +22,7 @@ async def test(ctx):
     await ctx.send('test 2')
 
 @bot.command()
-async def new_session(ctx, session_name: str):
+async def new_session(ctx, session_name):
     global sess, phase
     if sess == None or sess.phase != 0:
         return
@@ -31,15 +31,13 @@ async def new_session(ctx, session_name: str):
     await ctx.send('Made session: ' + session_name)
 
 #Phase 0 commands:
-
 @bot.command()
-async def add_banlist(ctx, *args):
+async def set_num_picks(ctx, n = int):
     global sess
     if sess == None or sess.phase != 0:
         return
-    for arg in args:
-        sess.banlist.add(arg)
-    await ctx.send('Successfully added to the banlist.')
+    sess.num_picks = n
+    await ctx.send('Successfully set number of picks.')
 
 @bot.command()
 async def set_starting_time(ctx, s_time = int):
@@ -53,38 +51,43 @@ async def set_starting_time(ctx, s_time = int):
     await ctx.send('Successfully set starting time.')
 
 @bot.command()
-async def set_num_picks(ctx, n = int):
+async def add_players(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
         return
-    sess.num_picks = n
-    await ctx.send('Successfully set number of picks.')
-
-@bot.command()
-async def add_players(ctx, *args):
-    global sess
-    if sess == None or sess.phase != 0:
-        return
-    for arg in args:
-        sess.players.append(classes.Player(arg, sess.starting_time))
+    player_list = [x.strip() for x in arg.split(',')]
+    for p in player_list:
+        sess.players.append(classes.Player(p, sess.starting_time))
     await ctx.send('Successfully added to the player list.')
 
 @bot.command()
-async def add_sets(ctx, *args):
+async def add_banlist(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
         return
-    for arg in args:
-        sess.sets.add(arg)
+    banned_cards = [x.strip() for x in arg.split(',')]
+    for card in banned_cards:
+        sess.banlist.add(card)
+    await ctx.send('Successfully added to the banlist.')
+
+@bot.command()
+async def add_sets(ctx, *, arg):
+    global sess
+    if sess == None or sess.phase != 0:
+        return
+    set_list = [x.strip() for x in arg.split(',')]
+    for s in set_list:
+        sess.sets.add(s)
     await ctx.send('Successfully added to the set list.')
     
 #Adds one group of sets which can't be taken with each other
 @bot.command()
-async def add_exclusive(ctx, *args):
+async def add_exclusive(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
         return
-    sess.exclusives.append([arg for arg in args])
+    ex_group = [x.strip() for x in arg.split(',')]
+    sess.exclusives.append([s for s in ex_group])
     await ctx.send('Successfully added new rule to the exclusives list.')
 
 @bot.command()
