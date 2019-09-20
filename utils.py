@@ -1,3 +1,5 @@
+import classes
+
 def time_elapsed(session, player):
     """Returns the time elapsed since player's turn began."""
 
@@ -31,3 +33,7 @@ def name_to_pindex(session, name):
         if name == player.name:
             return i
     return -1
+
+def get_unclaimed_users_str(session: classes.Session):
+    """Returns string of unclaimed users' names."""
+    
