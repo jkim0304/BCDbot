@@ -16,17 +16,11 @@ async def on_ready():
     print('Logged in as ' + bot.user.name)
 
 @bot.command()
-async def test(ctx):
-    await ctx.send ('test 1')
-    time.sleep(5)
-    await ctx.send('test 2')
-
-@bot.command()
 async def new_session(ctx, session_name):
     global sess, phase
     if sess == None or sess.phase != 0:
         return
-    #if sess: save sess to JSON
+    #TODO: if sess: JSON dump sess & save to file
     sess = classes.Session(session_name)
     await ctx.send('Made session: ' + session_name)
 
@@ -105,9 +99,18 @@ async def claim_user(ctx, name):
 @bot.command()
 async def finish_setup(ctx):
     global sess
-    #TODO: add more checks to see if setup was done correctly
-    if sess.phase != 0:
+    if sess == None or sess.phase != 0:
         await ctx.send('Not in setup.')
+    elif sess.num_picks == -1:
+        await ctx.send('Number of picks not set yet. (\">set_num_picks n\")')
+    elif sess.starting_time == -1:
+        await ctx.send('Amount of starting time not set yet. (\">set_starting_time n\")')
+    elif len(sess.players) >= 2:
+        await ctx.send('Not enough players. (\">add_players player1, player2, player3\")')
+    elif len(sess.sets) >= len(sess.players) * sess.num_picks:
+        await ctx.send('Not enough sets added. (\">add_sets set1, set2, set3\")')
+    elif utils.get_unclaimed_users_str(sess):
+        await ctx.send(f'Number of picks not set yet. (\">set_num_picks {utils.get_unclaimed_users_str(sess)}\")')
     else:
         sess.pick_draft = [None] * len(sess.players)
         sess.phase = 1
