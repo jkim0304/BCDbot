@@ -1,5 +1,13 @@
 import classes
 
+def load_session(path):
+    """Returns the session at path."""
+
+
+def save_session(session: classes.Session, path):
+    """Saves session into path."""
+    session
+
 def time_elapsed(session, player):
     """Returns the time elapsed since player's turn began."""
 
@@ -34,6 +42,11 @@ def name_to_pindex(session, name):
             return i
     return -1
 
-def get_unclaimed_users_str(session: classes.Session):
+def get_unclaimed_users_str(session):
     """Returns string of unclaimed users' names."""
-    
+    result = ""
+    for player in session.players:
+        if player.uid == -1:
+            result +=  player.name + ', '
+    result = result.rstrip(', ')
+    return result
