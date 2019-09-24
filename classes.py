@@ -41,3 +41,10 @@ class CustomEncoder(json.JSONEncoder):
             }
             return sess_dict
         return super().default(obj)
+
+class CustomDecoder(json.JSONDecoder):
+    def __init__(self, *args, **kwargs):
+        json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+
+    def object_hook(self, obj):
+        
