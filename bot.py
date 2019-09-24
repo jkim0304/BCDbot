@@ -117,7 +117,8 @@ async def finish_setup(ctx):
         sess.phase = 1
         sess.curr_player = 0
         await ctx.send('Beginning pick order draft.')
-        utils.ping_next(sess)
+        first_player = ctx.guild.get_member(sess.players[0].uid)
+        await ctx.send(f'{first_player} please select your draft position. (\">choose_position n\")')
 
 #Phase 1 commands:
 @bot.command()
@@ -125,14 +126,24 @@ async def choose_position(ctx, pos: int):
     global sess
     if sess == None or sess.phase != 1:
         return
-    if sess.pick_draft[pos] == None:
-        sess.pick_draft[pos] = sess.players[sess.curr_player].name
+    if pos < 1 or pos > len(sess.players):
+        await ctx.send(f'Invalid position.')
+        return
+    pos_index = pos - 1
+    if sess.pick_draft[pos_index] == None:
+        sess.pick_draft[pos_index] = sess.players[sess.curr_player].name
         sess.curr_player += 1
         if sess.curr_player == len(sess.players):
             sess.phase = 2
             sess.curr_player = 0
+            new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
+            sess.players = [sess.players[i] for i in new_order]
             await ctx.send('Beginning set draft.')
-        utils.ping_next(sess)
+            first_player = ctx.guild.get_member(sess.players[0].uid)
+            await ctx.send(f'{first_player} please choose a set. (\">choose_set x\")')
+        else:
+            next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid) 
+            await ctx.send(f'{next_player} please select your draft position. (\">choose_position n\")')
     else:
         await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos]}.')
 
@@ -154,9 +165,11 @@ async def choose_set(ctx, chosen_set):
                 sess.phase = 3
                 sess.curr_player = -1
                 await ctx.send('Set draft complete. Enjoy your matches!')
+                return
             else:
                 sess.curr_player = 0
-                utils.ping_next(sess)
+        next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
+        await ctx.send(f'{next_player} please choose a set. (\">choose_set x\")')
     else:
         await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set]}.')
     
@@ -177,7 +190,5 @@ async def save_session(ctx):
     else:
         utils.save_session(sess, f'Sessions/{sess.name}.json')
         await ctx.send('Successfully saved session.')
-
-
 
 bot.run(cfg.token)
