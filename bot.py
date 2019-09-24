@@ -16,12 +16,14 @@ async def on_ready():
 
 @bot.command()
 async def new_session(ctx, session_name):
-    global sess, phase
-    if sess == None or sess.phase != 0:
-        return
-    #TODO: if sess: JSON dump sess & save to file
+    global sess
+    if sess:
+        if sess.phase != 0: 
+            return
+        else:
+            utils.save_session(sess, f'Sessions/{sess.name}.json')
     sess = classes.Session(session_name)
-    await ctx.send('Made session: ' + session_name)
+    await ctx.send(f'Made session: {session_name}.')
 
 #Phase 0 commands:
 @bot.command()
@@ -158,9 +160,24 @@ async def choose_set(ctx, chosen_set):
     else:
         await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set]}.')
     
-    
-    
 #Phase agnostic commands:
+@bot.command()
+async def load_session(ctx, session_name):
+    global sess
+    if sess:
+        utils.save_session(sess, f'Sessions/{sess.name}.json')
+    sess = utils.load_session(f'Sessions/{session_name}.json')
+    await ctx.send(f'Loaded session: {session_name}.')
+
+@bot.command()
+async def save_session(ctx):
+    global sess
+    if not sess:
+        await ctx.send('There is no current session.')
+    else:
+        utils.save_session(sess, f'Sessions/{sess.name}.json')
+        await ctx.send('Successfully saved session.')
+
 
 
 bot.run(cfg.token)
