@@ -3,10 +3,15 @@ import json
 
 def save_session(session, path):
     """Saves session to file at path."""
-    
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(session, f, ensure_ascii=False, indent=4, cls=classes.CustomEncoder)
 
 def load_session(path):
     """Returns the Session at path."""
+    sess_dict = {}
+    with open(path, 'r', encoding='utf-8') as f:
+        sess_dict = json.load(f, cls=classes.CustomDecoder)
+    return sess_dict
 
 
 def time_elapsed(session, player):
