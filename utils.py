@@ -15,10 +15,6 @@ def load_session(path):
     return sess_dict
 
 #helpers
-def time_elapsed(session, player):
-    """Returns the time elapsed since player's turn began."""
-    #TODO
-
 def available_sets(session, player): 
     """Returns a list of sets available to this player."""
     #TODO: add exclusive groupings so that 'player' is relevant
@@ -52,7 +48,15 @@ def name_to_pindex(session, name):
             return i
     return -1
 
-def get_unclaimed_users_str(session: classes.Session):
+def get_unclaimed_users_str(session):
     """Returns string of unclaimed users' names."""
-    #TODO
+    result = ''
+    for p in session.players:
+        if p.uid == -1:
+            result += f'{p.name}, '
+    result = result.rstrip(', ')
+    return result
     
+def time_elapsed(session, player):
+    """Returns the time elapsed since player's turn began."""
+    #TODO (also needs to be added to bot logic)
