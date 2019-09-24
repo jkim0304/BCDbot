@@ -1,3 +1,5 @@
+import json
+
 class Session(object):
     def __init__(self, name):
         self.name = name
@@ -19,3 +21,23 @@ class Player(object):
         self.uid = -1
         self.sets = set()
         self.time = s_time
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Session):
+            sess_dict = {
+                'name': obj.name,
+                'sets': obj.sets,
+                'banlist': obj.banlist,
+                'players': [p.__dict__ for p in obj.players], 
+                'pick_draft': obj.pick_draft,
+                'exclusives': obj.exclusives,
+                'taken': obj.taken,
+                'num_picks': obj.num_picks,
+                'round_num': obj.round_num,
+                'curr_player': obj.curr_player,
+                'phase': obj.phase,
+                'starting_time': obj.starting_time
+            }
+            return sess_dict
+        return super().default(obj)

@@ -1,4 +1,13 @@
 import classes
+import json
+
+def save_session(session, path):
+    """Saves session to file at path."""
+    
+
+def load_session(path):
+    """Returns the Session at path."""
+
 
 def time_elapsed(session, player):
     """Returns the time elapsed since player's turn began."""
