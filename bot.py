@@ -26,7 +26,7 @@ async def new_session(ctx, session_name):
     sess = classes.Session(session_name)
     await ctx.send(f'Made session: {session_name}.')
 
-#Phase 0 commands:
+##### Phase 0 commands:
 @bot.command()
 @commands.is_owner()
 async def set_num_picks(ctx, n = int):
@@ -77,7 +77,7 @@ async def add_sets(ctx, *, arg):
     set_list = [x.strip() for x in arg.split(',')]
     sess.sets.update(set_list)
     await ctx.send('Successfully added to the set list.')
-    
+
 #Adds one group of sets which can't be taken with each other
 @bot.command()
 @commands.is_owner()
@@ -126,7 +126,7 @@ async def finish_setup(ctx):
         first_player = ctx.guild.get_member(sess.players[0].uid)
         await ctx.send(f'{first_player} please select your draft position. (\">choose_position n\")')
 
-#Phase 1 commands:
+##### Phase 1 commands:
 @bot.command()
 async def choose_position(ctx, pos: int):
     global sess
@@ -167,7 +167,7 @@ async def available_positions(ctx):
             available.append(i + 1)
     await ctx.send(f"Positions {', '.join(available).rstrip(', ')} are available.")
 
-#Phase 2 commands:
+##### Phase 2 commands:
 @bot.command()
 async def choose_set(ctx, chosen_set): 
     global sess
@@ -218,7 +218,7 @@ async def who_has(ctx, set_name):
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
     
-#Phase agnostic commands:
+##### Phase agnostic commands:
 @bot.command()
 @commands.is_owner()
 async def load_session(ctx, session_name):

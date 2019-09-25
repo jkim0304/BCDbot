@@ -8,7 +8,7 @@ class Session(object):
         self.players = []
         self.pick_draft = []
         self.exclusives = []
-        self.taken = {} # set:player
+        self.taken = {} #set:player
         self.num_picks = -1
         self.round_num = 1
         self.curr_player = 0
@@ -27,8 +27,8 @@ class CustomEncoder(json.JSONEncoder):
         if isinstance(obj, Session):
             sess_dict = {
                 'name': obj.name,
-                'sets': obj.sets,
-                'banlist': obj.banlist,
+                'sets': list(obj.sets),
+                'banlist': list(obj.banlist),
                 'players': [p.__dict__ for p in obj.players], 
                 'pick_draft': obj.pick_draft,
                 'exclusives': obj.exclusives,
@@ -48,8 +48,8 @@ class CustomDecoder(json.JSONDecoder):
 
     def object_hook(self, obj):
         session = Session(obj['name'])
-        session.sets = obj['sets']
-        session.banlist = obj['banlist']
+        session.sets = set(obj['sets'])
+        session.banlist = set(obj['banlist'])
         session.players = []
         for p in obj['players']:
             player = Player(p['name'], p['time'])
