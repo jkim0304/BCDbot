@@ -15,6 +15,7 @@ async def on_ready():
     print('Logged in as ' + bot.user.name)
 
 @bot.command()
+@commands.is_owner()
 async def new_session(ctx, session_name):
     global sess
     if sess:
@@ -27,6 +28,7 @@ async def new_session(ctx, session_name):
 
 #Phase 0 commands:
 @bot.command()
+@commands.is_owner()
 async def set_num_picks(ctx, n = int):
     global sess
     if sess == None or sess.phase != 0:
@@ -35,6 +37,7 @@ async def set_num_picks(ctx, n = int):
     await ctx.send('Successfully set number of picks.')
 
 @bot.command()
+@commands.is_owner()
 async def set_starting_time(ctx, s_time = int):
     global sess
     if sess == None or sess.phase != 0:
@@ -45,6 +48,7 @@ async def set_starting_time(ctx, s_time = int):
     await ctx.send('Successfully set starting time.')
 
 @bot.command()
+@commands.is_owner()
 async def add_players(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
@@ -55,6 +59,7 @@ async def add_players(ctx, *, arg):
     await ctx.send('Successfully added to the player list.')
 
 @bot.command()
+@commands.is_owner()
 async def add_banlist(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
@@ -64,6 +69,7 @@ async def add_banlist(ctx, *, arg):
     await ctx.send('Successfully added to the banlist.')
 
 @bot.command()
+@commands.is_owner()
 async def add_sets(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
@@ -74,6 +80,7 @@ async def add_sets(ctx, *, arg):
     
 #Adds one group of sets which can't be taken with each other
 @bot.command()
+@commands.is_owner()
 async def add_exclusive(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
@@ -96,6 +103,7 @@ async def claim_user(ctx, name):
         await ctx.send('Sorry this user has already been claimed.')
 
 @bot.command()
+@commands.is_owner()
 async def finish_setup(ctx):
     global sess
     if sess == None or sess.phase != 0:
@@ -212,6 +220,7 @@ async def who_has(ctx, set_name):
     
 #Phase agnostic commands:
 @bot.command()
+@commands.is_owner()
 async def load_session(ctx, session_name):
     global sess
     if sess:
@@ -220,6 +229,7 @@ async def load_session(ctx, session_name):
     await ctx.send(f'Loaded session: {session_name}.')
 
 @bot.command()
+@commands.is_owner()
 async def save_session(ctx):
     global sess
     if not sess:
