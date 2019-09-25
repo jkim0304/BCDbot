@@ -60,8 +60,7 @@ async def add_banlist(ctx, *, arg):
     if sess == None or sess.phase != 0:
         return
     banned_cards = [x.strip() for x in arg.split(',')]
-    for card in banned_cards:
-        sess.banlist.add(card)
+    sess.banlist.update(banned_cards)
     await ctx.send('Successfully added to the banlist.')
 
 @bot.command()
@@ -70,8 +69,7 @@ async def add_sets(ctx, *, arg):
     if sess == None or sess.phase != 0:
         return
     set_list = [x.strip() for x in arg.split(',')]
-    for s in set_list:
-        sess.sets.add(s)
+    sess.sets.update(set_list)
     await ctx.send('Successfully added to the set list.')
     
 #Adds one group of sets which can't be taken with each other
@@ -81,7 +79,7 @@ async def add_exclusive(ctx, *, arg):
     if sess == None or sess.phase != 0:
         return
     ex_group = [x.strip() for x in arg.split(',')]
-    sess.exclusives.append([s for s in ex_group])
+    sess.exclusives.append(set(ex_group))
     await ctx.send('Successfully added new rule to the exclusives list.')
 
 @bot.command()
@@ -126,8 +124,11 @@ async def choose_position(ctx, pos: int):
     global sess
     if sess == None or sess.phase != 1:
         return
+    if utils.ctx_to_pindex(sess, ctx) != sess.curr_player:
+        await ctx.send('It is not your turn.')
+        return
     if pos < 1 or pos > len(sess.players):
-        await ctx.send(f'Invalid position.')
+        await ctx.send('Invalid position.')
         return
     pos_index = pos - 1
     if sess.pick_draft[pos_index] == None:
@@ -147,11 +148,28 @@ async def choose_position(ctx, pos: int):
     else:
         await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos]}.')
 
+@bot.command()
+async def available_positions(ctx):
+    global sess
+    if sess == None or sess.phase != 1:
+        return
+    available = []
+    for i, p in enumerate(sess.pick_draft):
+        if not p:
+            available.append(i + 1)
+    await ctx.send(f"Positions {', '.join(available).rstrip(', ')} are available.")
+
 #Phase 2 commands:
 @bot.command()
 async def choose_set(ctx, chosen_set): 
     global sess
     if sess == None or sess.phase != 2:
+        return
+    if utils.ctx_to_pindex(sess, ctx) != sess.curr_player:
+        await ctx.send('It is not your turn.')
+        return
+    if chosen_set not in sess.sets:
+        await ctx.send(f'{chosen_set} is not a legal set.')
         return
     pindex = utils.ctx_to_pindex(sess, ctx)
     player = sess.players[pindex]
@@ -172,6 +190,25 @@ async def choose_set(ctx, chosen_set):
         await ctx.send(f'{next_player} please choose a set. (\">choose_set x\")')
     else:
         await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set]}.')
+
+@bot.command()
+async def my_available_sets(ctx): 
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    player = sess.players[utils.ctx_to_pindex(sess, ctx)]
+    available = utils.available_sets(sess, player)
+    await ctx.send(', '.join(available).rstrip(', '))
+
+@bot.command()
+async def who_has(ctx, set_name): 
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    if set_name in sess.taken:
+        await ctx.send(f'{sess.taken[set_name]} has {set_name}.')
+    else:
+        await ctx.send(f'No one has chosen {set_name} yet.')
     
 #Phase agnostic commands:
 @bot.command()

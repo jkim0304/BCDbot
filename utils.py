@@ -17,12 +17,19 @@ def load_session(path):
 #helpers
 def available_sets(session, player): 
     """Returns a list of sets available to this player."""
-    #TODO: add exclusive groupings so that 'player' is relevant
-    return [item for item in session.sets if item not in session.taken.keys()]
+    excluded_sets = set(session.taken.keys())
+    for grouping in session.exclusives:
+        if player.sets.intersection(grouping):
+            excluded_sets.update(grouping)
+    return [s for s in session.sets if s not in excluded_sets]
 
 def check_legality(session, player, set):
     """Returns legality of player picking set as a boolean."""
-    #TODO
+    excluded_sets = set(session.taken.keys())
+    for grouping in session.exclusives:
+        if player.sets.intersection(grouping):
+            excluded_sets.update(grouping)
+    return set not in excluded_sets
 
 def ctx_to_pindex(session, context):
     """Takes a context and returns the author's player index."""

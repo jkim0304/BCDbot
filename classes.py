@@ -8,7 +8,7 @@ class Session(object):
         self.players = []
         self.pick_draft = []
         self.exclusives = []
-        self.taken = {}
+        self.taken = {} # set:player
         self.num_picks = -1
         self.round_num = 1
         self.curr_player = 0
