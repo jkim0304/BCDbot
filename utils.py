@@ -9,10 +9,10 @@ def save_session(session, path):
 
 def load_session(path):
     """Returns the Session at path."""
-    sess_dict = {}
+    dct = {}
     with open(path, 'r', encoding='utf-8') as f:
-        sess_dict = json.load(f, cls=classes.CustomDecoder)
-    return sess_dict
+        dct = json.load(f)
+    return dict_to_session(dct)
 
 #helpers
 def available_sets(session, player): 
@@ -58,3 +58,24 @@ def get_unclaimed_users_str(session):
 def time_elapsed(session, player):
     """Returns the time elapsed since player's turn began."""
     #TODO (also needs to be added to bot logic)
+
+def dict_to_session(dct):
+    """Converts a session JSON dict back to a session object."""
+    session = classes.Session(dct['name'])
+    session.sets = set(dct['sets'])
+    session.banlist = set(dct['banlist'])
+    session.players = []
+    for p in dct['players']:
+        player = classes.Player(p['name'], p['time'])
+        player.uid = p['uid']
+        player.sets = p['sets']
+        session.players.append(player)
+    session.pick_draft = dct['pick_draft']
+    session.exclusives = dct['exclusives']
+    session.taken = dct['taken']
+    session.num_picks = dct['num_picks']
+    session.round_num = dct['round_num']
+    session.curr_player = dct['curr_player']
+    session.phase = dct['phase']
+    session.starting_time = dct['starting_time']
+    return session
