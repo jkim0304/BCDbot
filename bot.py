@@ -5,7 +5,7 @@ import classes
 import utils
 import config as cfg
 
-bot = commands.Bot(command_prefix='>', description='A bot that manages Block Constructed Drafts.')
+bot = commands.Bot(command_prefix='>', description='I am a bot that manages Block Constructed Drafts.')
 
 #current session
 sess = None 
@@ -14,7 +14,7 @@ sess = None
 async def on_ready():
     print('Logged in as ' + bot.user.name)
 
-@bot.command()
+@bot.command(help='Starts a new session with the given name.')
 @commands.is_owner()
 async def new_session(ctx, session_name):
     global sess
@@ -27,7 +27,7 @@ async def new_session(ctx, session_name):
     await ctx.send(f'Made session: {session_name}.')
 
 ##### Phase 0 commands:
-@bot.command()
+@bot.command(help='Sets the number of set picks for the session.')
 @commands.is_owner()
 async def set_num_picks(ctx, n = int):
     global sess
@@ -36,7 +36,7 @@ async def set_num_picks(ctx, n = int):
     sess.num_picks = n
     await ctx.send('Successfully set number of picks.')
 
-@bot.command()
+@bot.command(help='Sets the starting amount of time for picks.')
 @commands.is_owner()
 async def set_starting_time(ctx, s_time = int):
     global sess
@@ -47,7 +47,7 @@ async def set_starting_time(ctx, s_time = int):
     sess.starting_time = s_time
     await ctx.send('Successfully set starting time.')
 
-@bot.command()
+@bot.command(help='Adds a list of players to the session.')
 @commands.is_owner()
 async def add_players(ctx, *, arg):
     global sess
@@ -58,7 +58,7 @@ async def add_players(ctx, *, arg):
         sess.players.append(classes.Player(p, sess.starting_time))
     await ctx.send('Successfully added to the player list.')
 
-@bot.command()
+@bot.command(help='Adds a list of cards to the session\'s banlist.')
 @commands.is_owner()
 async def add_banlist(ctx, *, arg):
     global sess
@@ -68,7 +68,7 @@ async def add_banlist(ctx, *, arg):
     sess.banlist.update(banned_cards)
     await ctx.send('Successfully added to the banlist.')
 
-@bot.command()
+@bot.command(help='Adds a list of sets to the session.')
 @commands.is_owner()
 async def add_sets(ctx, *, arg):
     global sess
@@ -79,7 +79,7 @@ async def add_sets(ctx, *, arg):
     await ctx.send('Successfully added to the set list.')
 
 #Adds one group of sets which can't be taken with each other
-@bot.command()
+@bot.command(help='Adds a list of sets as an exclusive group to the session.')
 @commands.is_owner()
 async def add_exclusive(ctx, *, arg):
     global sess
@@ -89,7 +89,7 @@ async def add_exclusive(ctx, *, arg):
     sess.exclusives.append(set(ex_group))
     await ctx.send('Successfully added new rule to the exclusives list.')
 
-@bot.command()
+@bot.command(help='Links the caller\'s Discord account to the player name.')
 async def claim_user(ctx, name):
     global sess
     if sess == None or sess.phase != 0:
@@ -102,7 +102,7 @@ async def claim_user(ctx, name):
     else:
         await ctx.send('Sorry this user has already been claimed.')
 
-@bot.command()
+@bot.command(help='Finishes the setup phase and begins the pick order draft.')
 @commands.is_owner()
 async def finish_setup(ctx):
     global sess
@@ -127,7 +127,7 @@ async def finish_setup(ctx):
         await ctx.send(f'{first_player} please select your draft position. (\">choose_position n\")')
 
 ##### Phase 1 commands:
-@bot.command()
+@bot.command(help='Choose the n-th position.')
 async def choose_position(ctx, pos: int):
     global sess
     if sess == None or sess.phase != 1:
@@ -156,7 +156,7 @@ async def choose_position(ctx, pos: int):
     else:
         await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos]}.')
 
-@bot.command()
+@bot.command(help='Gives a list of positions available to the player.')
 async def available_positions(ctx):
     global sess
     if sess == None or sess.phase != 1:
@@ -168,7 +168,7 @@ async def available_positions(ctx):
     await ctx.send(f"Positions {', '.join(available).rstrip(', ')} are available.")
 
 ##### Phase 2 commands:
-@bot.command()
+@bot.command(help='Choose the set with the given name.')
 async def choose_set(ctx, chosen_set): 
     global sess
     if sess == None or sess.phase != 2:
@@ -199,7 +199,7 @@ async def choose_set(ctx, chosen_set):
     else:
         await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set]}.')
 
-@bot.command()
+@bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
     global sess
     if sess == None or sess.phase != 2:
@@ -208,7 +208,7 @@ async def my_available_sets(ctx):
     available = utils.available_sets(sess, player)
     await ctx.send(', '.join(available).rstrip(', '))
 
-@bot.command()
+@bot.command(help='Gives the player who has the set with the given name.')
 async def who_has(ctx, set_name): 
     global sess
     if sess == None or sess.phase != 2:
@@ -219,14 +219,14 @@ async def who_has(ctx, set_name):
         await ctx.send(f'No one has chosen {set_name} yet.')
     
 ##### Phase agnostic commands:
-@bot.command()
+@bot.command(help='Lists bot info.')
 async def info(ctx):
-    await ctx.send('A bot for managing Block Constructed Drafts ' 
+    await ctx.send('I am a bot for managing Block Constructed Drafts ' 
                     'written in Python and owned by Clamos#5916. ' 
-                    'Prefix commands with \'>\'. '
+                    '\nPrefix commands with \'>\'. '
                     'Call \'>help\' for a list of commands.')
 
-@bot.command()
+@bot.command(help='Loads the session with the given name.')
 @commands.is_owner()
 async def load_session(ctx, session_name):
     global sess
@@ -235,7 +235,7 @@ async def load_session(ctx, session_name):
     sess = utils.load_session(f'Sessions/{session_name}.json')
     await ctx.send(f'Loaded session: {session_name}.')
 
-@bot.command()
+@bot.command(help='Saves the current session state.')
 @commands.is_owner()
 async def save_session(ctx):
     global sess
