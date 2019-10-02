@@ -221,10 +221,10 @@ async def who_has(ctx, set_name):
 ##### Phase agnostic commands:
 @bot.command()
 async def info(ctx):
-    await ctx.send("""A bot for managing Block Constructed Drafts 
-                    written in Python and owned by Clamos#5916. 
-                    Prefix commands with \'>\'. Call \'>help\' 
-                    for a list of commands.""")
+    await ctx.send('A bot for managing Block Constructed Drafts ' 
+                    'written in Python and owned by Clamos#5916. ' 
+                    'Prefix commands with \'>\'. '
+                    'Call \'>help\' for a list of commands.')
 
 @bot.command()
 @commands.is_owner()
