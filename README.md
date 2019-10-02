@@ -7,6 +7,7 @@ Issue commands prefixed with '>' (e.g. ">choose_set Ixalan").
 ## Commands:
 
 ### General:
+* **info** - Lists bot info.
 * **help** - Lists commands.
 * **load_session [session name]** - Loads the session with the given name.
 * **save_session** - Saves the current session state.
