@@ -27,7 +27,7 @@ class CustomEncoder(json.JSONEncoder):
         if isinstance(obj, Session):
             p_list = []
             for p in obj.players:
-                p_dict = p.__dict__
+                p_dict = p.__dict__.copy()
                 p_dict['sets'] = list(p.sets)
                 p_list.append(p_dict)
 
