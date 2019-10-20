@@ -260,6 +260,7 @@ async def curr_session(ctx):
         await ctx.send(f'Current session: {sess.name}.')
 
 #Debugging command
+@bot.command()
 @commands.is_owner()
 async def state(ctx):
     global sess
