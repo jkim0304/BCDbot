@@ -159,7 +159,7 @@ async def choose_position(ctx, pos: int):
             next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid) 
             await ctx.send(f'{next_player.mention} please select your draft position. (\">choose_position n\")')
     else:
-        await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos_index].mention}.')
+        await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos_index]}.')
 
 @bot.command(help='Gives a list of positions available to the player.')
 async def available_positions(ctx):
