@@ -129,7 +129,7 @@ async def finish_setup(ctx):
         sess.curr_player = 0
         await ctx.send('Beginning pick order draft.')
         first_player = ctx.guild.get_member(sess.players[0].uid)
-        await ctx.send(f'{first_player} please select your draft position. (\">choose_position n\")')
+        await ctx.send(f'{first_player.mention} please select your draft position. (\">choose_position n\")')
 
 ##### Phase 1 commands:
 @bot.command(help='Choose the n-th position.')
@@ -154,12 +154,12 @@ async def choose_position(ctx, pos: int):
             sess.players = [sess.players[i] for i in new_order]
             await ctx.send('Beginning set draft.')
             first_player = ctx.guild.get_member(sess.players[0].uid)
-            await ctx.send(f'{first_player} please choose a set. (\">choose_set x\")')
+            await ctx.send(f'{first_player.mention} please choose a set. (\">choose_set x\")')
         else:
             next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid) 
-            await ctx.send(f'{next_player} please select your draft position. (\">choose_position n\")')
+            await ctx.send(f'{next_player.mention} please select your draft position. (\">choose_position n\")')
     else:
-        await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos]}.')
+        await ctx.send(f'Sorry, that position is taken by {sess.pick_draft[pos].mention}.')
 
 @bot.command(help='Gives a list of positions available to the player.')
 async def available_positions(ctx):
@@ -200,9 +200,9 @@ async def choose_set(ctx, chosen_set):
             else:
                 sess.curr_player = 0
         next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
-        await ctx.send(f'{next_player} please choose a set. (\">choose_set x\")')
+        await ctx.send(f'{next_player.mention} please choose a set. (\">choose_set x\")')
     else:
-        await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set]}.')
+        await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set].mention}.')
 
 @bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
@@ -219,7 +219,7 @@ async def who_has(ctx, set_name):
     if sess == None or sess.phase != 2:
         return
     if set_name in sess.taken:
-        await ctx.send(f'{sess.taken[set_name]} has {set_name}.')
+        await ctx.send(f'{sess.taken[set_name].mention} has {set_name}.')
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
     
