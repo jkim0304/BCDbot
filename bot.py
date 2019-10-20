@@ -117,9 +117,9 @@ async def finish_setup(ctx):
         await ctx.send('Number of picks not set yet. (\">set_num_picks n\")')
     elif sess.starting_time == -1:
         await ctx.send('Amount of starting time not set yet. (\">set_starting_time n\")')
-    elif len(sess.players) >= 2:
+    elif len(sess.players) < 2:
         await ctx.send('Not enough players. (\">add_players player1, player2, player3\")')
-    elif len(sess.sets) >= len(sess.players) * sess.num_picks:
+    elif len(sess.sets) < len(sess.players) * sess.num_picks:
         await ctx.send('Not enough sets added. (\">add_sets set1, set2, set3\")')
     elif utils.get_unclaimed_users_str(sess):
         await ctx.send(f'Number of picks not set yet. (\">set_num_picks {utils.get_unclaimed_users_str(sess)}\")')
