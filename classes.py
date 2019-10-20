@@ -25,11 +25,17 @@ class Player(object):
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Session):
+            p_list = []
+            for p in obj.players:
+                p_dict = p.__dict__
+                p_dict['sets'] = p.sets.__dict__
+                p_list.append(p_dict)
+
             sess_dict = {
                 'name': obj.name,
                 'sets': list(obj.sets),
                 'banlist': list(obj.banlist),
-                'players': [p.__dict__ for p in obj.players], 
+                'players': p_list, 
                 'pick_draft': obj.pick_draft,
                 'exclusives': obj.exclusives,
                 'taken': obj.taken,
