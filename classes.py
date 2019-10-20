@@ -28,7 +28,7 @@ class CustomEncoder(json.JSONEncoder):
             p_list = []
             for p in obj.players:
                 p_dict = p.__dict__
-                p_dict['sets'] = p.sets.__dict__
+                p_dict['sets'] = list(p.sets)
                 p_list.append(p_dict)
 
             sess_dict = {
