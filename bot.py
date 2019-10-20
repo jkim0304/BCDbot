@@ -39,7 +39,7 @@ async def set_num_picks(ctx, n = int):
         await ctx.send('Please give a positive integer.')
     else:
         sess.num_picks = n
-        await ctx.send('Successfully set number of picks.')
+        await ctx.send(f'Set number of picks to {sess.num_picks}.')
 
 @bot.command(help='Sets the starting amount of time for picks.')
 @commands.is_owner()
@@ -50,7 +50,7 @@ async def set_starting_time(ctx, s_time = int):
     for player in sess.players:
         player.time = s_time
     sess.starting_time = s_time
-    await ctx.send('Successfully set starting time.')
+    await ctx.send(f'Set starting time to {sess.starting_time}.')
 
 @bot.command(help='Adds a list of players to the session.')
 @commands.is_owner()
@@ -61,7 +61,7 @@ async def add_players(ctx, *, arg):
     player_list = [x.strip() for x in arg.split(',')]
     for p in player_list:
         sess.players.append(classes.Player(p, sess.starting_time))
-    await ctx.send('Successfully added to the player list.')
+    await ctx.send(f'Successfully added to the player list.')
 
 @bot.command(help='Adds a list of cards to the session\'s banlist.')
 @commands.is_owner()
