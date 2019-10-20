@@ -122,7 +122,7 @@ async def finish_setup(ctx):
     elif len(sess.sets) < len(sess.players) * sess.num_picks:
         await ctx.send('Not enough sets added. (\">add_sets set1, set2, set3\")')
     elif utils.get_unclaimed_users_str(sess):
-        await ctx.send(f'Number of picks not set yet. (\">set_num_picks {utils.get_unclaimed_users_str(sess)}\")')
+        await ctx.send(f'Players left unclaimed: {utils.get_unclaimed_users_str(sess)}. (\">claim_user name\")')
     else:
         sess.pick_draft = [None] * len(sess.players)
         sess.phase = 1
