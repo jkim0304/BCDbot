@@ -31,7 +31,7 @@ async def new_session(ctx, session_name):
 ##### Phase 0 commands:
 @bot.command(help='Sets the number of set picks for the session.')
 @commands.is_owner()
-async def set_num_picks(ctx, n = int):
+async def set_num_picks(ctx, n: int):
     global sess
     if sess == None or sess.phase != 0:
         return
@@ -43,7 +43,7 @@ async def set_num_picks(ctx, n = int):
 
 @bot.command(help='Sets the starting amount of time for picks.')
 @commands.is_owner()
-async def set_starting_time(ctx, s_time = int):
+async def set_starting_time(ctx, s_time: int):
     global sess
     if sess == None or sess.phase != 0:
         return
