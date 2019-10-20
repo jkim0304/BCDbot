@@ -35,8 +35,11 @@ async def set_num_picks(ctx, n = int):
     global sess
     if sess == None or sess.phase != 0:
         return
-    sess.num_picks = n
-    await ctx.send('Successfully set number of picks.')
+    if n < 1:
+        await ctx.send('Please give a positive integer.')
+    else:
+        sess.num_picks = n
+        await ctx.send('Successfully set number of picks.')
 
 @bot.command(help='Sets the starting amount of time for picks.')
 @commands.is_owner()
@@ -255,5 +258,25 @@ async def curr_session(ctx):
         await ctx.send('There is no current session.')
     else:
         await ctx.send(f'Current session: {sess.name}.')
+
+#Debugging command
+@commands.is_owner()
+async def state(ctx):
+    global sess
+    if not sess:
+        await ctx.send('There is no current session.')
+    else:
+        await ctx.send(f'Name: {sess.name}')
+        await ctx.send(f'Sets: {sess.sets}')
+        await ctx.send(f'Banlist: {sess.banlist}')
+        await ctx.send(f'Players: {[p.__dict__ for p in sess.players]}')
+        await ctx.send(f'Pick draft: {sess.pick_draft}')
+        await ctx.send(f'Exclusives: {sess.exclusives}')
+        await ctx.send(f'Taken: {sess.taken}')
+        await ctx.send(f'Number of picks: {sess.num_picks}')
+        await ctx.send(f'Round number: {sess.round_num}')
+        await ctx.send(f'Current player: {sess.curr_player}')
+        await ctx.send(f'Current phase: {sess.phase}')
+        await ctx.send(f'Starting time: {sess.starting_time}')
 
 bot.run(cfg.token)
