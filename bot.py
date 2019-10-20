@@ -247,4 +247,13 @@ async def save_session(ctx):
         utils.save_session(sess, f'Sessions/{sess.name}.json')
         await ctx.send('Successfully saved session.')
 
+@bot.command(help='Gives the current session\'s name.')
+@commands.is_owner()
+async def curr_session(ctx):
+    global sess
+    if not sess:
+        await ctx.send('There is no current session.')
+    else:
+        await ctx.send(f'Current session: {sess.name}.')
+
 bot.run(cfg.token)
