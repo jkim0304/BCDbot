@@ -259,6 +259,17 @@ async def curr_session(ctx):
     else:
         await ctx.send(f'Current session: {sess.name}.')
 
+@bot.command(help='Pings the player up next.')
+async def ping_next(ctx):
+    global sess
+    if sess == None or (sess.phase != 1 and sess.phase != 2):
+        return
+    next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
+    if sess.phase == 1:
+        await ctx.send(f'{next_player.mention} please select your draft position. (\">choose_position n\")')
+    if sess.phase == 2:
+        await ctx.send(f'{next_player.mention} please choose a set. (\">choose_set x\")')
+
 #Debugging command
 @bot.command(help='For debugging.')
 @commands.is_owner()
