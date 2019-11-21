@@ -199,10 +199,52 @@ async def choose_set(ctx, chosen_set):
                 return
             else:
                 sess.curr_player = 0
+
+        next_player = sess.players[sess.curr_player]
+        while next_player.next_set:
+            if not utils.check_legality(sess, next_player, next_player.next_set):
+                await ctx.send(f'{ctx.guild.get_member(next_player.uid).mention} your pick is now invalid. Please choose a new set.')
+                return
+            sess.taken[next_player.next_set] = next_player.name
+            next_player.sets.add(next_player.next_set)
+            next_player.next_set = ''
+            await ctx.send(f'{next_player.name} takes {next_player.next_set}.')
+            sess.curr_player += 1
+            if sess.curr_player == len(sess.players): #TODO: this if block should be a helper function so code isn't repeated
+                sess.round_num += 1
+                if sess.round_num > sess.num_picks:
+                    sess.phase = 3
+                    sess.curr_player = -1
+                    await ctx.send('Set draft complete. Enjoy your matches!')
+                    return
+                else:
+                    sess.curr_player = 0
+            next_player = sess.players[sess.curr_player]
+            
         next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
         await ctx.send(f'{next_player.mention} please choose a set. (\">choose_set x\")')
     else:
-        await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set].mention}.')
+        if chosen_set in sess.taken:
+            await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set].mention}.')
+        else:
+            await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
+
+@bot.command(help='Locks in next set in advance.')
+async def choose_next_set(ctx, chosen_set):
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    if utils.ctx_to_pindex(sess, ctx) == sess.curr_player:
+        await ctx.send("It's your turn. Please use '>choose_set' in the main channel.")
+        return
+    if chosen_set not in sess.sets:
+        await ctx.send(f'{chosen_set} is not a legal set.')
+        return
+    pindex = utils.ctx_to_pindex(sess, ctx)
+    player = sess.players[pindex]
+    if utils.check_legality(sess, player, chosen_set):
+        sess.players[utils.ctx_to_pindex(sess, ctx)].next_set = chosen_set
+        await ctx.send(f'Set {chosen_set} as your next pick.')
 
 @bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
