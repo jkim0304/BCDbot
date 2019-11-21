@@ -21,6 +21,7 @@ class Player(object):
         self.uid = -1
         self.sets = set()
         self.time = s_time
+        self.next_set = ''
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
