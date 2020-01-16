@@ -1,6 +1,11 @@
 import classes
 import json
 
+#3-letter code to set name dict
+code_dict = json.load(open('set_code_dict.json'))
+#master list of set names
+master_list = code_dict.values()
+
 #session JSON
 def save_session(session, path):
     """Saves session to file at path."""
@@ -79,3 +84,10 @@ def dict_to_session(dct):
     session.phase = dct['phase']
     session.starting_time = dct['starting_time']
     return session
+
+def code_to_name(code):
+    """Converts a 3-letter set code to its name. If not possible returns input."""
+    if code in code_dict:
+        return code_dict[code]
+    else:
+        return code

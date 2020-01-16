@@ -174,7 +174,9 @@ async def available_positions(ctx):
 
 ##### Phase 2 commands:
 @bot.command(help='Choose the set with the given name.')
-async def choose_set(ctx, chosen_set): 
+async def choose_set(ctx, set_name): 
+    chosen_set = utils.code_to_name(set_name)
+
     global sess
     if sess == None or sess.phase != 2:
         return
@@ -230,7 +232,9 @@ async def choose_set(ctx, chosen_set):
             await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
 
 @bot.command(help='Locks in next set in advance.')
-async def choose_next_set(ctx, chosen_set):
+async def choose_next_set(ctx, set_name):
+    chosen_set = utils.code_to_name(set_name)
+
     global sess
     if sess == None or sess.phase != 2:
         return
@@ -245,6 +249,11 @@ async def choose_next_set(ctx, chosen_set):
     if utils.check_legality(sess, player, chosen_set):
         sess.players[utils.ctx_to_pindex(sess, ctx)].next_set = chosen_set
         await ctx.send(f'Set {chosen_set} as your next pick.')
+    else:
+        if chosen_set in sess.taken:
+            await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set].mention}.')
+        else:
+            await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
 
 @bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
@@ -257,6 +266,8 @@ async def my_available_sets(ctx):
 
 @bot.command(help='Gives the player who has the set with the given name.')
 async def who_has(ctx, set_name): 
+    set_name = utils.code_to_name(set_name)
+
     global sess
     if sess == None or sess.phase != 2:
         return
