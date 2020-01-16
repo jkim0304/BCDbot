@@ -1,6 +1,6 @@
 import json
 
-class Session(object):
+class Session:
     def __init__(self, name):
         self.name = name
         self.sets = set()
@@ -15,7 +15,7 @@ class Session(object):
         self.phase = 0
         self.starting_time = -1
 
-class Player(object):
+class Player:
     def __init__(self, name, s_time):
         self.name = name
         self.uid = -1
