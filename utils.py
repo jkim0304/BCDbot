@@ -91,3 +91,25 @@ def code_to_name(code):
         return code_dict[code]
     else:
         return code
+
+def increment_curr_player(session):
+    """Increments the session's current player and returns True if phase 2 is now over."""
+    if session == None or session.phase != 2:
+        return False
+    if session.curr_forward:
+        if session.curr_player == len(session.players) - 1:
+            session.round_num += 1
+            session.curr_forward = False
+        else:
+            session.curr_player += 1
+    else:
+        if session.curr_player == 0:
+            session.round_num += 1
+            if session.round_num > session.num_picks:
+                session.phase  = 3
+                session.curr_player = -1
+                return True
+            session.curr_forward = True
+        else:
+            session.curr_player -= 1
+    return False
