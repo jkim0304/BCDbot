@@ -12,6 +12,7 @@ class Session:
         self.num_picks = -1
         self.round_num = 1
         self.curr_player = 0
+        self.curr_forward = True
         self.phase = 0
         self.starting_time = -1
 
@@ -21,7 +22,7 @@ class Player:
         self.uid = -1
         self.sets = set()
         self.time = s_time
-        self.next_set = ''
+        self.next_sets = []
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):

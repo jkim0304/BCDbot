@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import time 
+import datetime
 import classes
 import utils
 import config as cfg
@@ -11,6 +12,9 @@ bot = commands.Bot(command_prefix='>', description='I am a bot that manages Bloc
 
 #current session
 sess = None 
+
+#starts background loop
+upkeep.start()
 
 @bot.event
 async def on_ready():
@@ -27,6 +31,21 @@ async def new_session(ctx, session_name):
             utils.save_session(sess, f'Sessions/{sess.name}.json')
     sess = classes.Session(session_name)
     await ctx.send(f'Made session: {session_name}.')
+
+@tasks.loop(hours=24.0)
+async def upkeep(ctx):
+    global sess
+    if not sess:
+        return
+    utils.save_session(sess, f'Sessions/{sess.name}.json')
+    print(f'Saved state for the day. {datetime.datetime.today()}')
+
+    next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
+    if sess.phase == 1:
+        await ctx.send(f'Daily upkeep: {next_player.mention} is up. Please select a draft position. (\">choose_position n\")')
+    if sess.phase == 2:
+        await ctx.send(f'Daily upkeep: {next_player.mention} is up. Please choose a set. (\">choose_set x\")')
+    
 
 ##### Phase 0 commands:
 @bot.command(help='Sets the number of set picks for the session.')
@@ -80,8 +99,19 @@ async def add_sets(ctx, *, arg):
     if sess == None or sess.phase != 0:
         return
     set_list = [x.strip() for x in arg.split(',')]
+
+    # Removing improperly formated set names
+    reject_list = []
+    for s in set_list:
+        if s not in utils.master_list:
+            reject_list.append(s)
+            set_list.remove(s)
+
     sess.sets.update(set_list)
-    await ctx.send('Successfully added to the set list.')
+    if reject_list:
+        await ctx.send(f"The following sets were rejected: {', '.join(reject_list).rstrip(', ')}")
+    else:
+        await ctx.send('Successfully added to the set list.')
 
 #Adds one group of sets which can't be taken with each other
 @bot.command(help='Adds a list of sets as an exclusive group to the session.')
@@ -186,74 +216,58 @@ async def choose_set(ctx, set_name):
     if chosen_set not in sess.sets:
         await ctx.send(f'{chosen_set} is not a legal set.')
         return
+
     pindex = utils.ctx_to_pindex(sess, ctx)
     player = sess.players[pindex]
-    if utils.check_legality(sess, player, chosen_set):
-        sess.taken[chosen_set] = player.name
-        player.sets.add(chosen_set)
-        sess.curr_player += 1
-        if sess.curr_player == len(sess.players):
-            sess.round_num += 1
-            if sess.round_num > sess.num_picks:
-                sess.phase = 3
-                sess.curr_player = -1
-                await ctx.send('Set draft complete. Enjoy your matches!')
-                return
-            else:
-                sess.curr_player = 0
 
-        next_player = sess.players[sess.curr_player]
-        while next_player.next_set:
-            if not utils.check_legality(sess, next_player, next_player.next_set):
-                await ctx.send(f'{ctx.guild.get_member(next_player.uid).mention} your pick is now invalid. Please choose a new set.')
-                return
-            sess.taken[next_player.next_set] = next_player.name
-            next_player.sets.add(next_player.next_set)
-            next_player.next_set = ''
-            await ctx.send(f'{next_player.name} takes {next_player.next_set}.')
-            sess.curr_player += 1
-            if sess.curr_player == len(sess.players): #TODO: this if block should be a helper function so code isn't repeated
-                sess.round_num += 1
-                if sess.round_num > sess.num_picks:
-                    sess.phase = 3
-                    sess.curr_player = -1
-                    await ctx.send('Set draft complete. Enjoy your matches!')
-                    return
-                else:
-                    sess.curr_player = 0
-            next_player = sess.players[sess.curr_player]
-            
-        next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
-        await ctx.send(f'{next_player.mention} please choose a set. (\">choose_set x\")')
-    else:
+    if not utils.check_legality(sess, player, chosen_set):
         if chosen_set in sess.taken:
             await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set].mention}.')
         else:
             await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
+        return
 
-@bot.command(help='Locks in next set in advance.')
-async def choose_next_set(ctx, set_name):
-    chosen_set = utils.code_to_name(set_name)
+    sess.taken[chosen_set] = player.name
+    player.sets.add(chosen_set)
 
+    phase_over = utils.increment_curr_player(sess)
+    if phase_over:
+        await ctx.send('Set draft complete. Enjoy your matches!')
+        return
+    next_player = sess.players[sess.curr_player]
+
+    while next_player.next_sets:
+        next_set = next_player.next_sets.pop[0]
+        if not utils.check_legality(sess, next_player, next_set):
+            await ctx.send(f'{ctx.guild.get_member(next_player.uid).mention} your queued pick is invalid. Please choose a new set.')
+            return
+        sess.taken[next_set] = next_player.name
+        next_player.sets.add(next_set)
+        await ctx.send(f'{next_player.name} takes {next_set}.')
+
+        phase_over = utils.increment_curr_player(sess)
+        if phase_over:
+            await ctx.send('Set draft complete. Enjoy your matches!')
+            return
+        next_player = sess.players[sess.curr_player]
+        
+    next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
+    await ctx.send(f'{next_player.mention} please choose a set. (\">choose_set x\")')
+
+@bot.command(help='Locks in next sets in advance.')
+async def choose_next_sets(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 2:
         return
     if utils.ctx_to_pindex(sess, ctx) == sess.curr_player:
         await ctx.send("It's your turn. Please use '>choose_set' in the main channel.")
         return
-    if chosen_set not in sess.sets:
-        await ctx.send(f'{chosen_set} is not a legal set.')
-        return
     pindex = utils.ctx_to_pindex(sess, ctx)
     player = sess.players[pindex]
-    if utils.check_legality(sess, player, chosen_set):
-        sess.players[utils.ctx_to_pindex(sess, ctx)].next_set = chosen_set
-        await ctx.send(f'Set {chosen_set} as your next pick.')
-    else:
-        if chosen_set in sess.taken:
-            await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set].mention}.')
-        else:
-            await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
+    set_list = [x.strip() for x in arg.split(',')]
+    player.next_sets = set_list
+
+    await ctx.send(f'Set {set_list} as your next picks.')
 
 @bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
@@ -263,6 +277,13 @@ async def my_available_sets(ctx):
     player = sess.players[utils.ctx_to_pindex(sess, ctx)]
     available = utils.available_sets(sess, player)
     await ctx.send(', '.join(available).rstrip(', '))
+
+@bot.command(help='Lists banned cards.')
+async def banned_list(ctx): 
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    await ctx.send(', '.join(sess.banlist).rstrip(', '))    
 
 @bot.command(help='Gives the player who has the set with the given name.')
 async def who_has(ctx, set_name): 
