@@ -81,9 +81,9 @@ def dict_to_session(dct):
     session.taken = dct['taken']
     session.num_picks = dct['num_picks']
     session.round_num = dct['round_num']
+    session.pick_num = dct['pick_num']
     session.curr_player = dct['curr_player']
     session.phase = dct['phase']
-    session.starting_time = dct['starting_time']
     return session
 
 def code_to_name(code):
