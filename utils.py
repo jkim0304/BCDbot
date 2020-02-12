@@ -1,5 +1,6 @@
 import classes
 import json
+import math
 
 #3-letter code to set name dict
 code_dict = json.load(open('set_code_dict.json'))
@@ -96,20 +97,25 @@ def increment_curr_player(session):
     """Increments the session's current player and returns True if phase 2 is now over."""
     if session == None or session.phase != 2:
         return False
-    if session.curr_forward:
-        if session.curr_player == len(session.players) - 1:
-            session.round_num += 1
-            session.curr_forward = False
-        else:
-            session.curr_player += 1
-    else:
-        if session.curr_player == 0:
-            session.round_num += 1
-            if session.round_num > session.num_picks:
-                session.phase  = 3
-                session.curr_player = -1
-                return True
-            session.curr_forward = True
-        else:
-            session.curr_player -= 1
+
+    num_players = len(session.players)
+
+    session.pick_num += 1
+    if (session.pick_num > num_players * session.num_picks):
+        return True
+
+    session.round_num = math.ceil(session.pick_num / num_players)
+    
+    session.curr_player = (session.pick_num - 1) % num_players
+    if session.round_num % 2 == 0:
+        session.curr_player = -(session.curr_player + 1)
+
     return False
+
+def update_gsheet(session, sheet, player_name, chosen_set):
+    """Updates the sheet with the player's chosen set."""
+    ws = sheet.worksheet(session.name)
+    ws.update_cell(session.pick_num + 1, 4, chosen_set)
+    player_col = 8 + name_to_pindex(session, player_name)
+    pick_row = 1 + session.round_num
+    ws.update_cell(pick_row, player_col, chosen_set)

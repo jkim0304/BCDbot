@@ -11,8 +11,8 @@ class Session:
         self.taken = {} #set:player
         self.num_picks = -1
         self.round_num = 1
+        self.pick_num = 1
         self.curr_player = 0
-        self.curr_forward = True
         self.phase = 0
         self.starting_time = -1
 

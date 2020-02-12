@@ -2,11 +2,14 @@
 
 import discord
 from discord.ext import commands, tasks
+import math
 import time 
 import datetime
 import classes
 import utils
 import config as cfg
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 bot = commands.Bot(command_prefix='>', description='I am a bot that manages Block Constructed Drafts.')
 
@@ -15,6 +18,12 @@ sess = None
 
 #starts background loop
 upkeep.start()
+
+#Google Sheet setup
+scope = ['https://spreadsheets.google.com/feeds']
+creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
+client = gspread.authorize(creds)
+sheet = client.open_by_url('https://docs.google.com/spreadsheets/d/1_USuohcwfDGw3EdX-lSZPsvrbFJnNE8TXK8IUU3t_JU/edit#gid=0')
 
 @bot.event
 async def on_ready():
@@ -178,6 +187,31 @@ async def choose_position(ctx, pos: int):
         sess.pick_draft[pos_index] = sess.players[sess.curr_player].name
         sess.curr_player += 1
         if sess.curr_player == len(sess.players):
+            #Setup the session's Google worksheet
+            num_players = len(sess.players)
+            total_picks = num_players * sess.num_picks
+            num_rows= 1 + total_picks # 1 header row + num of total picks
+            num_cols= 7 + num_players # 4 cols for picks + 3 spacer + player sets
+            ws = sheet.add_worksheet(title = sess.name, rows = num_rows, cols = num_cols)
+
+            ws.update_cell(1, 1, 'Round')
+            ws.update_cell(1, 2, 'Pick')
+            ws.update_cell(1, 3, 'Player')
+            ws.update_cell(1, 4, 'Set')
+
+            for i in range(1, total_picks + 1):
+                round_num = math.ceil(i / num_players)
+                ws.update_cell(i + 1, 1, round_num)
+                ws.update_cell(i + 1, 2, i)
+                next_pindex = (i - 1) % num_players
+                if round_num % 2 == 0:
+                    next_pindex = -(next_pindex + 1)
+                ws.update_cell(i + 1, 3, sess.players[next_pindex].name)
+
+            for i in range(num_players):
+                ws.update_cell(1, i + 8, sess.players[i].name)
+
+            # Move to phase 2
             sess.phase = 2
             sess.curr_player = 0
             new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
@@ -229,6 +263,7 @@ async def choose_set(ctx, set_name):
 
     sess.taken[chosen_set] = player.name
     player.sets.add(chosen_set)
+    utils.update_gsheet(sess, sheet, player.name, chosen_set)
 
     phase_over = utils.increment_curr_player(sess)
     if phase_over:
@@ -243,6 +278,7 @@ async def choose_set(ctx, set_name):
             return
         sess.taken[next_set] = next_player.name
         next_player.sets.add(next_set)
+        utils.update_gsheet(sess, sheet, next_player.name, next_set)
         await ctx.send(f'{next_player.name} takes {next_set}.')
 
         phase_over = utils.increment_curr_player(sess)
