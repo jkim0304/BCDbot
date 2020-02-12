@@ -14,14 +14,12 @@ class Session:
         self.pick_num = 1
         self.curr_player = 0
         self.phase = 0
-        self.starting_time = -1
 
 class Player:
-    def __init__(self, name, s_time):
+    def __init__(self, name):
         self.name = name
         self.uid = -1
         self.sets = set()
-        self.time = s_time
         self.next_sets = []
 
 class CustomEncoder(json.JSONEncoder):
@@ -43,9 +41,9 @@ class CustomEncoder(json.JSONEncoder):
                 'taken': obj.taken,
                 'num_picks': obj.num_picks,
                 'round_num': obj.round_num,
+                'pick_num' : obj.pick_num,
                 'curr_player': obj.curr_player,
-                'phase': obj.phase,
-                'starting_time': obj.starting_time
+                'phase': obj.phase
             }
             return sess_dict
         return super().default(obj)

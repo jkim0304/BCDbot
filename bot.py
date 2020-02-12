@@ -3,7 +3,6 @@
 import discord
 from discord.ext import commands, tasks
 import math
-import time 
 import datetime
 import classes
 import utils
@@ -69,17 +68,6 @@ async def set_num_picks(ctx, n: int):
         sess.num_picks = n
         await ctx.send(f'Set number of picks to {sess.num_picks}.')
 
-@bot.command(help='Sets the starting amount of time for picks.')
-@commands.is_owner()
-async def set_starting_time(ctx, s_time: int):
-    global sess
-    if sess == None or sess.phase != 0:
-        return
-    for player in sess.players:
-        player.time = s_time
-    sess.starting_time = s_time
-    await ctx.send(f'Set starting time to {sess.starting_time}.')
-
 @bot.command(help='Adds a list of players to the session.')
 @commands.is_owner()
 async def add_players(ctx, *, arg):
@@ -88,7 +76,7 @@ async def add_players(ctx, *, arg):
         return
     player_list = [x.strip() for x in arg.split(',')]
     for p in player_list:
-        sess.players.append(classes.Player(p, sess.starting_time))
+        sess.players.append(classes.Player(p))
     await ctx.send(f'Successfully added to the player list.')
 
 @bot.command(help='Adds a list of cards to the session\'s banlist.')
@@ -154,8 +142,6 @@ async def finish_setup(ctx):
         await ctx.send('Not in setup.')
     elif sess.num_picks == -1:
         await ctx.send('Number of picks not set yet. (\">set_num_picks n\")')
-    elif sess.starting_time == -1:
-        await ctx.send('Amount of starting time not set yet. (\">set_starting_time n\")')
     elif len(sess.players) < 2:
         await ctx.send('Not enough players. (\">add_players player1, player2, player3\")')
     elif len(sess.sets) < len(sess.players) * sess.num_picks:
@@ -397,8 +383,8 @@ async def state(ctx):
         await ctx.send(f'Taken: {sess.taken}')
         await ctx.send(f'Number of picks: {sess.num_picks}')
         await ctx.send(f'Round number: {sess.round_num}')
+        await ctx.send(f'Pick number: {sess.pick_num}')
         await ctx.send(f'Current player: {sess.curr_player}')
         await ctx.send(f'Current phase: {sess.phase}')
-        await ctx.send(f'Starting time: {sess.starting_time}')
 
 bot.run(cfg.token)
