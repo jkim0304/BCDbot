@@ -15,9 +15,6 @@ bot = commands.Bot(command_prefix='>', description='I am a bot that manages Bloc
 #current session
 sess = None 
 
-#starts background loop
-upkeep.start()
-
 #Google Sheet setup
 scope = ['https://spreadsheets.google.com/feeds']
 creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
@@ -41,20 +38,16 @@ async def new_session(ctx, session_name):
     await ctx.send(f'Made session: {session_name}.')
 
 @tasks.loop(hours=24.0)
-async def upkeep(ctx):
+async def upkeep():
     global sess
     if not sess:
         return
     utils.save_session(sess, f'Sessions/{sess.name}.json')
     print(f'Saved state for the day. {datetime.datetime.today()}')
 
-    next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
-    if sess.phase == 1:
-        await ctx.send(f'Daily upkeep: {next_player.mention} is up. Please select a draft position. (\">choose_position n\")')
-    if sess.phase == 2:
-        await ctx.send(f'Daily upkeep: {next_player.mention} is up. Please choose a set. (\">choose_set x\")')
+#starts background loop
+upkeep.start()
     
-
 ##### Phase 0 commands:
 @bot.command(help='Sets the number of set picks for the session.')
 @commands.is_owner()
