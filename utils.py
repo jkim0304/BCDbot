@@ -72,7 +72,7 @@ def dict_to_session(dct):
     session.banlist = set(dct['banlist'])
     session.players = []
     for p in dct['players']:
-        player = classes.Player(p['name'], p['time'])
+        player = classes.Player(p['name'])
         player.uid = p['uid']
         player.sets = set(p['sets'])
         player.next_sets = p['next_sets']
