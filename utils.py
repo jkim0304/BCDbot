@@ -37,11 +37,10 @@ def check_legality(session, player, set_name):
             excluded_sets.update(grouping)
     return set_name not in excluded_sets
 
-def ctx_to_pindex(session, context):
-    """Takes a context and returns the author's player index."""
-    author_id = context.author.id
+def uid_to_pindex(session, uid):
+    """Takes a user id and returns the corresponding player index."""
     for i, player in enumerate(session.players):
-        if author_id == player.uid:
+        if uid == player.uid:
             return i
     return -1
 
