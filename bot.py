@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands, tasks
 import math
 import datetime
+import re
 import classes
 import utils
 import config as cfg
@@ -155,7 +156,7 @@ async def choose_position(ctx, pos: int):
     global sess
     if sess == None or sess.phase != 1:
         return
-    if utils.ctx_to_pindex(sess, ctx) != sess.curr_player:
+    if utils.uid_to_pindex(sess, ctx.author.id) != sess.curr_player:
         await ctx.send('It is not your turn.')
         return
     if pos < 1 or pos > len(sess.players):
@@ -218,24 +219,27 @@ async def available_positions(ctx):
 ##### Phase 2 commands:
 @bot.command(help='Choose the set with the given name.')
 async def choose_set(ctx, set_name): 
-    chosen_set = utils.code_to_name(set_name)
-
     global sess
     if sess == None or sess.phase != 2:
         return
-    if utils.ctx_to_pindex(sess, ctx) != sess.curr_player:
+    if utils.uid_to_pindex(sess, ctx.author.id) != sess.curr_player:
         await ctx.send('It is not your turn.')
         return
+
+    chosen_set = utils.code_to_name(set_name)
     if chosen_set not in sess.sets:
         await ctx.send(f'{chosen_set} is not a legal set.')
         return
 
-    pindex = utils.ctx_to_pindex(sess, ctx)
+    pindex = utils.uid_to_pindex(sess, ctx.author.id)
     player = sess.players[pindex]
 
     if not utils.check_legality(sess, player, chosen_set):
-        if chosen_set in sess.taken:
-            await ctx.send(f'Sorry, that set is taken by {sess.taken[chosen_set].mention}.')
+        if chosen_set in sess.taken.keys():
+            owner_name = sess.taken[chosen_set]
+            owner_pindex = utils.name_to_pindex(sess, owner_name)
+            owner = sess.players[owner_pindex].uid
+            await ctx.send(f'Sorry, that set is taken by {owner.mention}.')
         else:
             await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
         return
@@ -274,10 +278,10 @@ async def choose_next_sets(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 2:
         return
-    if utils.ctx_to_pindex(sess, ctx) == sess.curr_player:
+    if utils.uid_to_pindex(sess, ctx.author.id) == sess.curr_player:
         await ctx.send("It's your turn. Please use '>choose_set' in the main channel.")
         return
-    pindex = utils.ctx_to_pindex(sess, ctx)
+    pindex = utils.uid_to_pindex(sess, ctx.author.id)
     player = sess.players[pindex]
     set_list = [x.strip() for x in arg.split(',')]
     player.next_sets = set_list
@@ -289,7 +293,7 @@ async def my_available_sets(ctx):
     global sess
     if sess == None or sess.phase != 2:
         return
-    player = sess.players[utils.ctx_to_pindex(sess, ctx)]
+    player = sess.players[utils.uid_to_pindex(sess, ctx.author.id)]
     available = utils.available_sets(sess, player)
     await ctx.send(', '.join(available).rstrip(', '))
 
@@ -302,15 +306,91 @@ async def banned_list(ctx):
 
 @bot.command(help='Gives the player who has the set with the given name.')
 async def who_has(ctx, set_name): 
-    set_name = utils.code_to_name(set_name)
-
     global sess
     if sess == None or sess.phase != 2:
         return
+    
+    set_name = utils.code_to_name(set_name)
+
     if set_name in sess.taken:
-        await ctx.send(f'{sess.taken[set_name].mention} has {set_name}.')
+        owner_name = sess.taken[set_name]
+        owner_pindex = utils.name_to_pindex(sess, owner_name)
+        owner = sess.players[owner_pindex].uid
+        await ctx.send(f'{owner.mention} has {set_name}.')
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
+
+@bot.command(help='Proposes trading one set for another set.')
+async def propose_trade(ctx, set1, set2): 
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    
+    set1 = utils.code_to_name(set1)
+    set2 = utils.code_to_name(set2)
+
+    p1_pindex = utils.uid_to_pindex(sess, ctx.author.id)
+    player1 = sess.players[p1_pindex]
+    p2_pindex = utils.name_to_pindex(sess, sess.taken[set2])
+    player2 = sess.players[p2_pindex]
+
+    if set1 not in player1.sets:
+        await ctx.send(f'Invalid trade. You do not have {set1}.')
+    if set2 not in sess.taken:
+        await ctx.send(f'Invalid trade. No one has taken {set2} yet.')
+    
+    trade_message = await ctx.send(f'[{player1.name}] offers [{set1}] for [{set2}] \n \
+                                    {player2.uid.mention}, please accept or deny this trade by reacting to this message.')
+    trade_message.add_reaction('\N{THUMBS UP SIGN}')
+    trade_message.add_reaction('\N{THUMBS DOWN SIGN}')
+
+@bot.event
+async def on_reaction_add(reaction, user):
+    global sess
+    #check that it is reacted by the right person, is valid, and process it
+    message = reaction.message
+    if not message.mentions:
+        return
+    is_reactor_p2 = (user.id == message.mentions[0])
+    is_valid_reaction = (reaction.emoji == '\N{THUMBS UP SIGN}' or reaction.emoji == '\N{THUMBS DOWN SIGN}')
+    is_trade_post = any(r.me for r in message.reactions)
+    if not (is_reactor_p2 and is_valid_reaction and is_trade_post):
+        return
+
+    channel = reaction.message.channel
+    brackets = [p.split(']')[0] for p in message.content.split('[') if ']' in p]
+    player1 = sess.players[utils.name_to_pindex(sess, brackets[0])]
+    player2 = sess.players[utils.uid_to_pindex(sess, user.id)]
+    set1 = brackets[1]
+    set2 = brackets[2]
+
+    if reaction.emoji == '\N{THUMBS UP SIGN}':
+        p1_has_s1 = set1 in player1.sets
+        p2_has_s2 = set2 in player2.sets
+        p1_can_have_s2 = utils.check_legality(sess, player1, set2)
+        p2_can_have_s1 = utils.check_legality(sess, player2, set1)
+        if not (p1_has_s1 and p2_has_s2 and p1_can_have_s2 and p2_can_have_s1):
+            await channel.send(f'{player1.uid.mention} your trade offer for {player2.name} is invalid.')
+        else:
+            sess.taken[set2] = player1.name
+            sess.taken[set1] = player2.name
+
+            player1.sets.remove(set1)
+            player2.sets.remove(set2)
+            player1.sets.add(set2)
+            player2.sets.add(set1)
+
+            ws = sheet.worksheet(sess.name)
+            cell1 = ws.find(set1)
+            cell2 = ws.find(set2)
+            ws.update_cell(cell1.row, cell2.col, set2)
+            ws.update_cell(cell2.row, cell2.col, set1)
+
+            await channel.send(f'{player1.uid.mention} your trade offer for {player2.name} has been accepted and processed.')
+    else: 
+        await message.delete()
+        await channel.send(f'{player1.uid.mention} your trade offer for {player2.name} has been denied.')
+
     
 ##### Phase agnostic commands:
 @bot.command(help='Lists bot info.')
