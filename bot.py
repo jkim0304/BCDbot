@@ -116,11 +116,14 @@ async def add_exclusive(ctx, *, arg):
     await ctx.send('Successfully added new rule to the exclusives list.')
 
 @bot.command(help='Links the caller\'s Discord account to the player name.')
-async def claim_user(ctx, name):
+async def claim_user(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
         return
+    name = arg
     pindex = utils.name_to_pindex(sess, name)
+    if pindex != -1:
+        return
     player = sess.players[pindex]
     if player.uid == -1:
         player.uid = ctx.author.id
@@ -153,7 +156,7 @@ async def finish_setup(ctx):
 ##### Phase 1 commands:
 @bot.command(help='Choose the n-th position.')
 async def choose_position(ctx, pos: int):
-    global sess
+    global sess, sheet
     if sess == None or sess.phase != 1:
         return
     if utils.uid_to_pindex(sess, ctx.author.id) != sess.curr_player:
@@ -218,14 +221,14 @@ async def available_positions(ctx):
 
 ##### Phase 2 commands:
 @bot.command(help='Choose the set with the given name.')
-async def choose_set(ctx, set_name): 
-    global sess
+async def choose_set(ctx, *, arg): 
+    global sess, sheet
     if sess == None or sess.phase != 2:
         return
     if utils.uid_to_pindex(sess, ctx.author.id) != sess.curr_player:
         await ctx.send('It is not your turn.')
         return
-
+    set_name = arg
     chosen_set = utils.code_to_name(set_name)
     if chosen_set not in sess.sets:
         await ctx.send(f'{chosen_set} is not a legal set.')
@@ -305,12 +308,12 @@ async def banned_list(ctx):
     await ctx.send(', '.join(sess.banlist).rstrip(', '))    
 
 @bot.command(help='Gives the player who has the set with the given name.')
-async def who_has(ctx, set_name): 
+async def who_has(ctx, *, arg): 
     global sess
     if sess == None or sess.phase != 2:
         return
     
-    set_name = utils.code_to_name(set_name)
+    set_name = utils.code_to_name(arg)
 
     if set_name in sess.taken:
         owner_name = sess.taken[set_name]
@@ -321,13 +324,13 @@ async def who_has(ctx, set_name):
         await ctx.send(f'No one has chosen {set_name} yet.')
 
 @bot.command(help='Proposes trading one set for another set.')
-async def propose_trade(ctx, set1, set2): 
+async def propose_trade(ctx, *, arg): 
     global sess
     if sess == None or sess.phase != 2:
         return
-    
-    set1 = utils.code_to_name(set1)
-    set2 = utils.code_to_name(set2)
+    sets = [x.strip() for x in arg.split(',')]
+    set1 = utils.code_to_name(sets[0])
+    set2 = utils.code_to_name(sets[1])
 
     p1_pindex = utils.uid_to_pindex(sess, ctx.author.id)
     player1 = sess.players[p1_pindex]
@@ -346,7 +349,7 @@ async def propose_trade(ctx, set1, set2):
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    global sess
+    global sess, sheet
     #check that it is reacted by the right person, is valid, and process it
     message = reaction.message
     if not message.mentions:
