@@ -241,7 +241,7 @@ async def choose_set(ctx, *, arg):
         if chosen_set in sess.taken.keys():
             owner_name = sess.taken[chosen_set]
             owner_pindex = utils.name_to_pindex(sess, owner_name)
-            owner = sess.players[owner_pindex].uid
+            owner = ctx.guild.get_member(sess.players[owner_pindex].uid)
             await ctx.send(f'Sorry, that set is taken by {owner.mention}.')
         else:
             await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
@@ -318,7 +318,7 @@ async def who_has(ctx, *, arg):
     if set_name in sess.taken:
         owner_name = sess.taken[set_name]
         owner_pindex = utils.name_to_pindex(sess, owner_name)
-        owner = sess.players[owner_pindex].uid
+        owner = ctx.guild.get_member(sess.players[owner_pindex].uid)
         await ctx.send(f'{owner.mention} has {set_name}.')
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
@@ -343,7 +343,7 @@ async def propose_trade(ctx, *, arg):
         await ctx.send(f'Invalid trade. No one has taken {set2} yet.')
     
     trade_message = await ctx.send(f'[{player1.name}] offers [{set1}] for [{set2}] \n \
-                                    {player2.uid.mention}, please accept or deny this trade by reacting to this message.')
+                                    {ctx.guild.get_member(player2.uid).mention}, please accept or deny this trade by reacting to this message.')
     trade_message.add_reaction('\N{THUMBS UP SIGN}')
     trade_message.add_reaction('\N{THUMBS DOWN SIGN}')
 
@@ -373,7 +373,7 @@ async def on_reaction_add(reaction, user):
         p1_can_have_s2 = utils.check_legality(sess, player1, set2)
         p2_can_have_s1 = utils.check_legality(sess, player2, set1)
         if not (p1_has_s1 and p2_has_s2 and p1_can_have_s2 and p2_can_have_s1):
-            await channel.send(f'{player1.uid.mention} your trade offer for {player2.name} is invalid.')
+            await channel.send(f'{ctx.guild.get_member(player1.uid.mention)} your trade offer for {player2.name} is invalid.')
         else:
             sess.taken[set2] = player1.name
             sess.taken[set1] = player2.name
@@ -389,10 +389,10 @@ async def on_reaction_add(reaction, user):
             ws.update_cell(cell1.row, cell2.col, set2)
             ws.update_cell(cell2.row, cell2.col, set1)
 
-            await channel.send(f'{player1.uid.mention} your trade offer for {player2.name} has been accepted and processed.')
+            await channel.send(f'{ctx.guild.get_member(player1.uid).mention} your trade offer for {player2.name} has been accepted and processed.')
     else: 
         await message.delete()
-        await channel.send(f'{player1.uid.mention} your trade offer for {player2.name} has been denied.')
+        await channel.send(f'{ctx.guild.get_member(player1.uid).mention} your trade offer for {player2.name} has been declined.')
 
     
 ##### Phase agnostic commands:
@@ -442,7 +442,7 @@ async def ping_next(ctx):
     if sess.phase == 2:
         await ctx.send(f'{next_player.mention} please choose a set. (\">choose_set x\")')
 
-#Debugging command
+#Debugging commands
 @bot.command(help='For debugging.')
 @commands.is_owner()
 async def state(ctx):
@@ -461,6 +461,15 @@ async def state(ctx):
         await ctx.send(f'Round number: {sess.round_num}')
         await ctx.send(f'Pick number: {sess.pick_num}')
         await ctx.send(f'Current player: {sess.curr_player}')
+        await ctx.send(f'Current phase: {sess.phase}')
+
+@bot.command(help='Gives current session phase.')
+@commands.is_owner()
+async def curr_phase(ctx):
+    global sess
+    if not sess:
+        await ctx.send('There is no current session.')
+    else:
         await ctx.send(f'Current phase: {sess.phase}')
 
 bot.run(cfg.token)
