@@ -108,7 +108,7 @@ def increment_curr_player(session):
     
     session.curr_player = (session.pick_num - 1) % num_players
     if session.round_num % 2 == 0:
-        session.curr_player = -(session.curr_player + 1)
+        session.curr_player = num_players - (session.curr_player + 1)
 
     return False
 
