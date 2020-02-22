@@ -170,6 +170,10 @@ async def choose_position(ctx, pos: int):
         sess.pick_draft[pos_index] = sess.players[sess.curr_player].name
         sess.curr_player += 1
         if sess.curr_player == len(sess.players):
+            #Reorder players
+            new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
+            sess.players = [sess.players[i] for i in new_order]
+
             #Setup the session's Google worksheet
             num_players = len(sess.players)
             total_picks = num_players * sess.num_picks
@@ -197,8 +201,6 @@ async def choose_position(ctx, pos: int):
             # Move to phase 2
             sess.phase = 2
             sess.curr_player = 0
-            new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
-            sess.players = [sess.players[i] for i in new_order]
             await ctx.send('Beginning set draft.')
             first_player = ctx.guild.get_member(sess.players[0].uid)
             await ctx.send(f'{first_player.mention} please choose a set. (\">choose_set x\")')
