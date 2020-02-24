@@ -31,10 +31,7 @@ async def on_ready():
 async def new_session(ctx, session_name):
     global sess
     if sess:
-        if sess.phase != 0: 
-            return
-        else:
-            utils.save_session(sess, f'Sessions/{sess.name}.json')
+        utils.save_session(sess, f'Sessions/{sess.name}.json')
     sess = classes.Session(session_name)
     await ctx.send(f'Made session: {session_name}.')
 
@@ -122,7 +119,7 @@ async def claim_user(ctx, *, arg):
         return
     name = arg
     pindex = utils.name_to_pindex(sess, name)
-    if pindex != -1:
+    if pindex == 'Not found.':
         return
     player = sess.players[pindex]
     if player.uid == -1:
@@ -219,7 +216,7 @@ async def available_positions(ctx):
     for i, p in enumerate(sess.pick_draft):
         if not p:
             available.append(i + 1)
-    await ctx.send(f"Positions {', '.join(available).rstrip(', ')} are available.")
+    await ctx.send(f"Positions {', '.join(map(str, available)).rstrip(', ')} are available.")
 
 ##### Phase 2 commands:
 @bot.command(help='Choose the set with the given name.')
@@ -423,6 +420,13 @@ async def save_session(ctx):
     else:
         utils.save_session(sess, f'Sessions/{sess.name}.json')
         await ctx.send('Successfully saved session.')
+
+@bot.command(help='Unloads the current session without saving.')
+async def kill_session(ctx):
+    global sess
+    if sess:
+        sess = None
+        await ctx.send('Session killed.')
 
 @bot.command(help='Gives the current session\'s name.')
 @commands.is_owner()

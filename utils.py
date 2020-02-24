@@ -42,14 +42,14 @@ def uid_to_pindex(session, uid):
     for i, player in enumerate(session.players):
         if uid == player.uid:
             return i
-    return -1
+    return 'Not found.'
 
 def name_to_pindex(session, name):
     """Returns name's player index."""
     for i, player in enumerate(session.players):
         if name == player.name:
             return i
-    return -1
+    return 'Not found.'
 
 def get_unclaimed_users_str(session):
     """Returns string of unclaimed users' names."""
