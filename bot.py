@@ -338,8 +338,6 @@ async def propose_trade(ctx, *, arg):
 
     p1_pindex = utils.uid_to_pindex(sess, ctx.author.id)
     player1 = sess.players[p1_pindex]
-    p2_pindex = utils.name_to_pindex(sess, sess.taken[set2])
-    player2 = sess.players[p2_pindex]
 
     if set1 not in player1.sets:
         await ctx.send(f'Invalid trade. You do not have {set1}.')
@@ -347,6 +345,9 @@ async def propose_trade(ctx, *, arg):
     if set2 not in sess.taken:
         await ctx.send(f'Invalid trade. No one has taken {set2} yet.')
         return
+        
+    p2_pindex = utils.name_to_pindex(sess, sess.taken[set2])
+    player2 = sess.players[p2_pindex]
     
     trade_message = await ctx.send(f'[{player1.name}] offers [{set1}] for [{set2}] \n \
                                     {ctx.guild.get_member(player2.uid).mention}, please accept or deny this trade by reacting to this message.')
