@@ -165,6 +165,7 @@ async def choose_position(ctx, pos: int):
     pos_index = pos - 1
     if sess.pick_draft[pos_index] == None:
         sess.pick_draft[pos_index] = sess.players[sess.curr_player].name
+        await ctx.send('Choice accepted.')
         sess.curr_player += 1
         if sess.curr_player == len(sess.players):
             #Reorder players
@@ -249,6 +250,7 @@ async def choose_set(ctx, *, arg):
     sess.taken[chosen_set] = player.name
     player.sets.add(chosen_set)
     utils.update_gsheet(sess, sheet, player.name, chosen_set)
+    await ctx.send('Choice accepted.')
 
     phase_over = utils.increment_curr_player(sess)
     if phase_over:
@@ -328,6 +330,9 @@ async def propose_trade(ctx, *, arg):
     if sess == None or sess.phase != 2:
         return
     sets = [x.strip() for x in arg.split(',')]
+    if len(sets) < 2:
+        await ctx.send('Please input a second set. (\">propose_trade set1, set2\")')
+        return
     set1 = utils.code_to_name(sets[0])
     set2 = utils.code_to_name(sets[1])
 
@@ -338,13 +343,15 @@ async def propose_trade(ctx, *, arg):
 
     if set1 not in player1.sets:
         await ctx.send(f'Invalid trade. You do not have {set1}.')
+        return
     if set2 not in sess.taken:
         await ctx.send(f'Invalid trade. No one has taken {set2} yet.')
+        return
     
     trade_message = await ctx.send(f'[{player1.name}] offers [{set1}] for [{set2}] \n \
                                     {ctx.guild.get_member(player2.uid).mention}, please accept or deny this trade by reacting to this message.')
-    trade_message.add_reaction('\N{THUMBS UP SIGN}')
-    trade_message.add_reaction('\N{THUMBS DOWN SIGN}')
+    await trade_message.add_reaction('\N{THUMBS UP SIGN}')
+    await trade_message.add_reaction('\N{THUMBS DOWN SIGN}')
 
 @bot.event
 async def on_reaction_add(reaction, user):
@@ -366,13 +373,15 @@ async def on_reaction_add(reaction, user):
     set1 = brackets[1]
     set2 = brackets[2]
 
+    p1_member = channel.guild.get_member(player1.uid)
+
     if reaction.emoji == '\N{THUMBS UP SIGN}':
         p1_has_s1 = set1 in player1.sets
         p2_has_s2 = set2 in player2.sets
         p1_can_have_s2 = utils.check_legality(sess, player1, set2)
         p2_can_have_s1 = utils.check_legality(sess, player2, set1)
         if not (p1_has_s1 and p2_has_s2 and p1_can_have_s2 and p2_can_have_s1):
-            await channel.send(f'{ctx.guild.get_member(player1.uid.mention)} your trade offer for {player2.name} is invalid.')
+            await channel.send(f'{p1_member.mention} your trade offer for {player2.name} is invalid.')
         else:
             sess.taken[set2] = player1.name
             sess.taken[set1] = player2.name
@@ -388,10 +397,10 @@ async def on_reaction_add(reaction, user):
             ws.update_cell(cell1.row, cell2.col, set2)
             ws.update_cell(cell2.row, cell2.col, set1)
 
-            await channel.send(f'{ctx.guild.get_member(player1.uid).mention} your trade offer for {player2.name} has been accepted and processed.')
+            await channel.send(f'{p1_member.mention} your trade offer for {player2.name} has been accepted and processed.')
     else: 
         await message.delete()
-        await channel.send(f'{ctx.guild.get_member(player1.uid).mention} your trade offer for {player2.name} has been declined.')
+        await channel.send(f'{p1_member.mention} your trade offer for {player2.name} has been declined.')
 
     
 ##### Phase agnostic commands:
