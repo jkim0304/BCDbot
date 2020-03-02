@@ -361,12 +361,11 @@ async def on_reaction_add(reaction, user):
     message = reaction.message
     if not message.mentions:
         return
-    is_reactor_p2 = (user.id == message.mentions[0])
+    is_reactor_p2 = (user.id == message.mentions[0].id)
     is_valid_reaction = (reaction.emoji == '\N{THUMBS UP SIGN}' or reaction.emoji == '\N{THUMBS DOWN SIGN}')
     is_trade_post = any(r.me for r in message.reactions)
     if not (is_reactor_p2 and is_valid_reaction and is_trade_post):
         return
-
     channel = reaction.message.channel
     brackets = [p.split(']')[0] for p in message.content.split('[') if ']' in p]
     player1 = sess.players[utils.name_to_pindex(sess, brackets[0])]
@@ -375,14 +374,17 @@ async def on_reaction_add(reaction, user):
     set2 = brackets[2]
 
     p1_member = channel.guild.get_member(player1.uid)
+    trade_string = f'{p1_member.mention} your trade offer of [{set1}] for [{set2}]'
 
     if reaction.emoji == '\N{THUMBS UP SIGN}':
         p1_has_s1 = set1 in player1.sets
         p2_has_s2 = set2 in player2.sets
-        p1_can_have_s2 = utils.check_legality(sess, player1, set2)
-        p2_can_have_s1 = utils.check_legality(sess, player2, set1)
+        p1_can_have_s2 = utils.check_legality(sess, player1, set2, trade_sets=(set1, set2))
+        p2_can_have_s1 = utils.check_legality(sess, player2, set1, trade_sets=(set1, set2))
+        
         if not (p1_has_s1 and p2_has_s2 and p1_can_have_s2 and p2_can_have_s1):
-            await channel.send(f'{p1_member.mention} your trade offer for {player2.name} is invalid.')
+            await message.delete()
+            await channel.send(trade_string + ' is invalid.')
         else:
             sess.taken[set2] = player1.name
             sess.taken[set1] = player2.name
@@ -393,15 +395,18 @@ async def on_reaction_add(reaction, user):
             player2.sets.add(set1)
 
             ws = sheet.worksheet(sess.name)
-            cell1 = ws.find(set1)
-            cell2 = ws.find(set2)
-            ws.update_cell(cell1.row, cell2.col, set2)
-            ws.update_cell(cell2.row, cell2.col, set1)
+            set1_cells = ws.findall(set1)
+            set2_cells = ws.findall(set2)
+            for cell in set1_cells:
+                ws.update_cell(cell.row, cell.col, set2)
+            for cell in set2_cells:
+                ws.update_cell(cell.row, cell.col, set1)
 
-            await channel.send(f'{p1_member.mention} your trade offer for {player2.name} has been accepted and processed.')
-    else: 
+            await message.delete()
+            await channel.send(trade_string + ' has been accepted and processed.')
+    if reaction.emoji == '\N{THUMBS DOWN SIGN}': 
         await message.delete()
-        await channel.send(f'{p1_member.mention} your trade offer for {player2.name} has been declined.')
+        await channel.send(trade_string + ' has been declined.')
 
     
 ##### Phase agnostic commands:
