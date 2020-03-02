@@ -29,12 +29,16 @@ def available_sets(session, player):
             excluded_sets.update(grouping)
     return [s for s in session.sets if s not in excluded_sets]
 
-def check_legality(session, player, set_name):
+def check_legality(session, player, set_name, trade_sets=False):
     """Returns legality of player picking set as a boolean."""
     excluded_sets = set(session.taken.keys())
+    if trade_sets:
+        excluded_sets.discard(trade_sets[0])
+        excluded_sets.discard(trade_sets[1])
     for grouping in session.exclusives:
         if player.sets.intersection(grouping):
             excluded_sets.update(grouping)
+    print(f'excluded_sets: {excluded_sets}')
     return set_name not in excluded_sets
 
 def uid_to_pindex(session, uid):
