@@ -28,10 +28,11 @@ async def on_ready():
 
 @bot.command(help='Starts a new session with the given name.')
 @commands.is_owner()
-async def new_session(ctx, session_name):
+async def new_session(ctx, *, arg):
     global sess
     if sess:
         utils.save_session(sess, f'Sessions/{sess.name}.json')
+    session_name = arg
     sess = classes.Session(session_name)
     await ctx.send(f'Made session: {session_name}.')
 
