@@ -77,7 +77,7 @@ async def add_banlist(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 0:
         return
-    banned_cards = [x.strip() for x in arg.split(',')]
+    banned_cards = [x.strip() for x in arg.split(';')]
     sess.banlist.update(banned_cards)
     await ctx.send('Successfully added to the banlist.')
 
@@ -307,7 +307,7 @@ async def banned_list(ctx):
     global sess
     if sess == None or sess.phase != 2:
         return
-    await ctx.send(', '.join(sess.banlist).rstrip(', '))    
+    await ctx.send('; '.join(sess.banlist).rstrip('; '))    
 
 @bot.command(help='Gives the player who has the set with the given name.')
 async def who_has(ctx, *, arg): 
