@@ -470,20 +470,19 @@ async def ping_next(ctx):
 async def state(ctx):
     global sess
     if not sess:
-        await ctx.send('There is no current session.')
+        print('There is no current session.')
     else:
-        await ctx.send(f'Name: {sess.name}')
-        await ctx.send(f'Sets: {sess.sets}')
-        await ctx.send(f'Banlist: {sess.banlist}')
-        await ctx.send(f'Players: {[p.__dict__ for p in sess.players]}')
-        await ctx.send(f'Pick draft: {sess.pick_draft}')
-        await ctx.send(f'Exclusives: {sess.exclusives}')
-        await ctx.send(f'Taken: {sess.taken}')
-        await ctx.send(f'Number of picks: {sess.num_picks}')
-        await ctx.send(f'Round number: {sess.round_num}')
-        await ctx.send(f'Pick number: {sess.pick_num}')
-        await ctx.send(f'Current player: {sess.curr_player}')
-        await ctx.send(f'Current phase: {sess.phase}')
+        print(f'Name: {sess.name}')
+        print(f'Sets: {sess.sets}')
+        print(f'Banlist: {sess.banlist}')
+        print(f'Players: {[p.__dict__ for p in sess.players]}')
+        print(f'Exclusives: {sess.exclusives}')
+        print(f'Taken: {sess.taken}')
+        print(f'Number of picks: {sess.num_picks}')
+        print(f'Round number: {sess.round_num}')
+        print(f'Pick number: {sess.pick_num}')
+        print(f'Current player: {sess.curr_player}')
+        print(f'Current phase: {sess.phase}')
 
 @bot.command(help='Gives current session phase.')
 @commands.is_owner()
