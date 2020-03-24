@@ -420,10 +420,11 @@ async def info(ctx):
 
 @bot.command(help='Loads the session with the given name.')
 @commands.is_owner()
-async def load_session(ctx, session_name):
+async def load_session(ctx, *, arg):
     global sess
     if sess:
         utils.save_session(sess, f'Sessions/{sess.name}.json')
+    session_name = arg
     sess = utils.load_session(f'Sessions/{session_name}.json')
     await ctx.send(f'Loaded session: {session_name}.')
 
