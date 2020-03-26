@@ -173,11 +173,13 @@ async def choose_position(ctx, pos: int):
             for i, p in enumerate(sess.pick_draft):
                 if not p:
                     last_pos = i + 1
+                    print(f'last_pos: {last_pos}')
                     break
             sess.pick_draft[last_pos] = sess.players[sess.curr_player].name
 
             #Reorder players
             new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
+            print(f'new_order: {new_order}')
             sess.players = [sess.players[i] for i in new_order]
 
             #Setup the session's Google worksheet
@@ -494,6 +496,7 @@ async def state(ctx):
         print(f'Pick number: {sess.pick_num}')
         print(f'Current player: {sess.curr_player}')
         print(f'Current phase: {sess.phase}')
+        print(f'Pick draft: {sess.pick_draft}')
 
 @bot.command(help='Gives current session phase.')
 @commands.is_owner()
