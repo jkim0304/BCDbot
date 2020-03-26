@@ -172,14 +172,12 @@ async def choose_position(ctx, pos: int):
             #Make last player choose the remaining position
             for i, p in enumerate(sess.pick_draft):
                 if not p:
-                    last_pos = i + 1
-                    print(f'last_pos: {last_pos}')
+                    last_pos = i
                     break
             sess.pick_draft[last_pos] = sess.players[sess.curr_player].name
 
             #Reorder players
             new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
-            print(f'new_order: {new_order}')
             sess.players = [sess.players[i] for i in new_order]
 
             #Setup the session's Google worksheet
