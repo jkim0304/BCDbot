@@ -168,7 +168,14 @@ async def choose_position(ctx, pos: int):
         sess.pick_draft[pos_index] = sess.players[sess.curr_player].name
         await ctx.send('Choice accepted.')
         sess.curr_player += 1
-        if sess.curr_player == len(sess.players):
+        if sess.curr_player == len(sess.players) - 1:
+            #Make last player choose the remaining position
+            for i, p in enumerate(sess.pick_draft):
+                if not p:
+                    last_pos = i + 1
+                    break
+            sess.pick_draft[last_pos] = sess.players[sess.curr_player].name
+
             #Reorder players
             new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
             sess.players = [sess.players[i] for i in new_order]
@@ -176,8 +183,8 @@ async def choose_position(ctx, pos: int):
             #Setup the session's Google worksheet
             num_players = len(sess.players)
             total_picks = num_players * sess.num_picks
-            num_rows= 1 + total_picks # 1 header row + num of total picks
-            num_cols= 7 + num_players # 4 cols for picks + 3 spacer + player sets
+            num_rows = 1 + total_picks # 1 header row + num of total picks
+            num_cols = 7 + num_players # 4 cols for picks + 3 spacer + player sets
             ws = sheet.add_worksheet(title = sess.name, rows = num_rows, cols = num_cols)
 
             ws.update_cell(1, 1, 'Round')
