@@ -154,7 +154,7 @@ async def finish_setup(ctx):
 ##### Phase 1 commands:
 @bot.command(help='Choose the n-th position.')
 async def choose_position(ctx, pos: int):
-    global sess, sheet
+    global sess, sheet, client
     if sess == None or sess.phase != 1:
         return
     if utils.uid_to_pindex(sess, ctx.author.id) != sess.curr_player:
@@ -185,6 +185,7 @@ async def choose_position(ctx, pos: int):
             total_picks = num_players * sess.num_picks
             num_rows = 1 + total_picks # 1 header row + num of total picks
             num_cols = 7 + num_players # 4 cols for picks + 3 spacer + player sets
+            client.login()
             ws = sheet.add_worksheet(title = sess.name, rows = num_rows, cols = num_cols)
 
             ws.update_cell(1, 1, 'Round')
@@ -230,7 +231,7 @@ async def available_positions(ctx):
 ##### Phase 2 commands:
 @bot.command(help='Choose the set with the given name.')
 async def choose_set(ctx, *, arg): 
-    global sess, sheet
+    global sess, sheet, client
     if sess == None or sess.phase != 2:
         return
     if utils.uid_to_pindex(sess, ctx.author.id) != sess.curr_player:
@@ -257,6 +258,7 @@ async def choose_set(ctx, *, arg):
 
     sess.taken[chosen_set] = player.name
     player.sets.add(chosen_set)
+    client.login()
     utils.update_gsheet(sess, sheet, player.name, chosen_set)
     await ctx.send('Choice accepted.')
 
@@ -364,7 +366,7 @@ async def propose_trade(ctx, *, arg):
 
 @bot.event
 async def on_reaction_add(reaction, user):
-    global sess, sheet
+    global sess, sheet, client
     #check that it is reacted by the right person, is valid, and process it
     message = reaction.message
     if not message.mentions:
@@ -402,6 +404,7 @@ async def on_reaction_add(reaction, user):
             player1.sets.add(set2)
             player2.sets.add(set1)
 
+            client.login()
             ws = sheet.worksheet(sess.name)
             set1_cells = ws.findall(set1)
             set2_cells = ws.findall(set2)
