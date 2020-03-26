@@ -177,7 +177,7 @@ async def choose_position(ctx, pos: int):
             sess.pick_draft[last_pos] = sess.players[sess.curr_player].name
 
             #Reorder players
-            new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]
+            new_order = [utils.name_to_pindex(sess, n) for n in sess.pick_draft]    
             sess.players = [sess.players[i] for i in new_order]
 
             #Setup the session's Google worksheet
@@ -193,17 +193,27 @@ async def choose_position(ctx, pos: int):
             ws.update_cell(1, 3, 'Player')
             ws.update_cell(1, 4, 'Set')
 
+            round_list = ws.range(f'A2:A{total_picks + 1}')
+            pick_list = ws.range(f'B2:B{total_picks + 1}')
+            player_list = ws.range(f'C2:C{total_picks + 1}')
+
+            # TODO: Go back and clean this b/c the 1-indexing is unnecessary now
             for i in range(1, total_picks + 1):
                 round_num = math.ceil(i / num_players)
-                ws.update_cell(i + 1, 1, round_num)
-                ws.update_cell(i + 1, 2, i)
+                round_list[i - 1] = round_num
+                pick_list[i - 1] = i
                 next_pindex = (i - 1) % num_players
                 if round_num % 2 == 0:
                     next_pindex = -(next_pindex + 1)
-                ws.update_cell(i + 1, 3, sess.players[next_pindex].name)
+                player_list[i - 1] = sess.players[next_pindex].name
+
+            ws.update_cells(round_list)
+            ws.update_cells(pick_list)
+            ws.update_cells(player_list)
 
             for i in range(num_players):
                 ws.update_cell(1, i + 8, sess.players[i].name)
+
 
             # Move to phase 2
             sess.phase = 2
