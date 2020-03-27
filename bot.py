@@ -200,12 +200,12 @@ async def choose_position(ctx, pos: int):
             # TODO: Go back and clean this b/c the 1-indexing is unnecessary now
             for i in range(1, total_picks + 1):
                 round_num = math.ceil(i / num_players)
-                round_list[i - 1] = round_num
-                pick_list[i - 1] = i
+                round_list[i - 1].value = round_num
+                pick_list[i - 1].value = i
                 next_pindex = (i - 1) % num_players
                 if round_num % 2 == 0:
                     next_pindex = -(next_pindex + 1)
-                player_list[i - 1] = sess.players[next_pindex].name
+                player_list[i - 1].value = sess.players[next_pindex].name
 
             ws.update_cells(round_list)
             ws.update_cells(pick_list)
