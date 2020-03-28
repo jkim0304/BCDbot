@@ -338,9 +338,7 @@ async def who_has(ctx, *, arg):
 
     if set_name in sess.taken:
         owner_name = sess.taken[set_name]
-        owner_pindex = utils.name_to_pindex(sess, owner_name)
-        owner = ctx.guild.get_member(sess.players[owner_pindex].uid)
-        await ctx.send(f'{owner.mention} has {set_name}.')
+        await ctx.send(f'{owner_name} has {set_name}.')
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
 
