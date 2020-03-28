@@ -38,7 +38,6 @@ def check_legality(session, player, set_name, trade_sets=False):
     for grouping in session.exclusives:
         if player.sets.intersection(grouping):
             excluded_sets.update(grouping)
-    print(f'excluded_sets: {excluded_sets}')
     return set_name not in excluded_sets
 
 def uid_to_pindex(session, uid):
