@@ -312,6 +312,17 @@ async def choose_next_sets(ctx, *, arg):
 
     await ctx.send(f'Set {set_list} as your next picks.')
 
+@bot.command(help="Clears the list of sets picked in advance with '>choose_next_sets'.")
+async def clear_next_sets(ctx):
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    pindex = utils.uid_to_pindex(sess, ctx.author.id)
+    player = sess.players[pindex]
+    player.next_sets = []
+    
+    await ctx.send("Cleared next_sets.")
+
 @bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
     global sess
