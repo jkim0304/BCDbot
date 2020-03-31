@@ -279,7 +279,7 @@ async def choose_set(ctx, *, arg):
     next_player = sess.players[sess.curr_player]
 
     while next_player.next_sets:
-        next_set = next_player.next_sets.pop[0]
+        next_set = next_player.next_sets.pop()
         if not utils.check_legality(sess, next_player, next_set):
             await ctx.send(f'{ctx.guild.get_member(next_player.uid).mention} your queued pick is invalid. Please choose a new set.')
             return
