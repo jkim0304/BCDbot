@@ -11,6 +11,10 @@ import config as cfg
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+#geoff added
+import ssl
+from urllib.error import HTTPError
+
 bot = commands.Bot(command_prefix='>', description='I am a bot that manages Block Constructed Drafts.')
 
 #current session
@@ -279,7 +283,7 @@ async def choose_set(ctx, *, arg):
     next_player = sess.players[sess.curr_player]
 
     while next_player.next_sets:
-        next_set = next_player.next_sets.pop(0)
+        next_set = next_player.next_sets.pop[0]
         if not utils.check_legality(sess, next_player, next_set):
             await ctx.send(f'{ctx.guild.get_member(next_player.uid).mention} your queued pick is invalid. Please choose a new set.')
             return
@@ -312,17 +316,6 @@ async def choose_next_sets(ctx, *, arg):
 
     await ctx.send(f'Set {set_list} as your next picks.')
 
-@bot.command(help="Clears the list of sets picked in advance with '>choose_next_sets'.")
-async def clear_next_sets(ctx):
-    global sess
-    if sess == None or sess.phase != 2:
-        return
-    pindex = utils.uid_to_pindex(sess, ctx.author.id)
-    player = sess.players[pindex]
-    player.next_sets = []
-    
-    await ctx.send("Cleared next_sets.")
-
 @bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
     global sess
@@ -332,12 +325,99 @@ async def my_available_sets(ctx):
     available = utils.available_sets(sess, player)
     await ctx.send(', '.join(available).rstrip(', '))
 
+@bot.command(help='Checks if a card is banned.')
+async def is_banned(ctx, *, arg):
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    if arg.lower().strip() in [x.lower().trim() for x in sess.banlist]:
+        await ctx.send('This card is banned.')
+    else:
+        await ctx.send('This card is NOT banned.')
+
 @bot.command(help='Lists banned cards.')
 async def banned_list(ctx): 
     global sess
     if sess == None or sess.phase != 2:
         return
     await ctx.send('; '.join(sess.banlist).rstrip('; '))    
+
+@bot.command(help='Looks up which sets have a particular card.')
+async def sets_with(ctx, *, arg):
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+
+    player = sess.players[utils.uid_to_pindex(sess, ctx.author.id)]
+    available = utils.available_sets(sess, player)
+    args_raw = arg.split("&&")
+    args = [a.strip() for a in args_raw]
+    results = dict()
+
+
+    # Allow the SSL to make unverified connection; unsure why on my computer this is needed
+    ssl._create_default_https_context = ssl._create_unverified_context
+    for card_name in args:
+        try:
+            arguments = {"order":"name", "as":"grid", "unique":"prints", "q":card_name}
+            data = utils.scryfall_search(arguments)
+
+
+            # for each unique card name, list all the sets it appears in
+            for card in data['data']:
+                if card['object'] == 'card': 
+                    if len(args) > 1 and card['name'].lower().strip() != card_name.lower().strip():
+                        continue
+                    
+                    # Discard the search result if its not from a set we're playing with
+                    if card['set_name'] not in sess.sets:
+                        continue
+
+                    # Make a new entry for a card we haven't seen yet
+                    elif card['name'] not in results:
+                        results[card['name']] = set()
+                    
+                    elif card['set_name'] in available:
+                        results[card['name']].add(card['set_name'] + " (available)")
+                    elif card['set_name'] not in available: 
+                        results[card['name']].add(card['set_name'] + " (unavailable)")
+                        
+        except HTTPError:
+            await ctx.send('Scryfall lookup failed. Check spelling.')
+            return
+        except Exception:
+            await ctx.send('Unknown error during lookup.')
+            return
+
+                
+    if len(args) == 1:
+        for card_name_index in results:
+            result_string = ', '.join(set(results[card_name_index]))
+            await ctx.send(f'{card_name} is in: {result_string}.' )
+    
+    elif len(args) > 1:
+        # if not everything was found
+        if len(results) != len(args):
+            fmt = list()
+            for card in results:
+                if len(results[card]) != 0:
+                    fmt.append(card)
+
+            found_cards = ", ".join(fmt)
+            ctx.send(f'Results were only found for: {found_cards}.')
+            
+        # What results did we find
+        intersection = set(results[next(iter(results))])
+        for card in results:
+           
+            intersection = intersection.intersection(results[card])
+
+        if len(intersection) == 0:
+            ctx.send('No results.')
+        else:
+            intersection_str = ", ".join(intersection)
+            ctx.send('Sets containing all the cards in query: {intersection_str}.')
+
 
 @bot.command(help='Gives the player who has the set with the given name.')
 async def who_has(ctx, *, arg): 
@@ -349,7 +429,9 @@ async def who_has(ctx, *, arg):
 
     if set_name in sess.taken:
         owner_name = sess.taken[set_name]
-        await ctx.send(f'{owner_name} has {set_name}.')
+        owner_pindex = utils.name_to_pindex(sess, owner_name)
+        owner = ctx.guild.get_member(sess.players[owner_pindex].uid)
+        await ctx.send(f'{owner.mention} has {set_name}.')
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
 

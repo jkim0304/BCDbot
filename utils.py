@@ -1,6 +1,8 @@
 import classes
 import json
 import math
+import urllib.request
+import urllib.parse
 
 #3-letter code to set name dict
 code_dict = json.load(open('set_code_dict.json'))
@@ -21,6 +23,22 @@ def load_session(path):
     return dict_to_session(dct)
 
 #helpers
+
+#Makes API request
+def scryfall_search(arguments):
+    rooturl = "https://api.scryfall.com/cards/search?"
+    url = rooturl + urllib.parse.urlencode(arguments)
+    req = urllib.request.Request(url)
+    response = urllib.request.urlopen(req).read()
+    data = json.loads(response.decode('utf-8'))
+    if data['object'] == 'error':
+        raise Exception(data['code'], data['details'])
+        return data
+    elif data['object'] != 'list':
+        raise Exception("Unexpected api return type: ", data['object']) 
+    elif data['object'] == 'list':
+        return data
+
 def available_sets(session, player): 
     """Returns a list of sets available to this player."""
     excluded_sets = set(session.taken.keys())
