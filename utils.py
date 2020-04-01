@@ -109,8 +109,9 @@ def dict_to_session(dct):
 
 def code_to_name(code):
     """Converts a 3-letter set code to its name. If not possible returns input."""
-    if code in code_dict:
-        return code_dict[code]
+    upper_code = code.upper()
+    if upper_code in code_dict:
+        return code_dict[upper_code]
     else:
         return code
 

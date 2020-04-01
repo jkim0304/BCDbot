@@ -241,7 +241,7 @@ async def available_positions(ctx):
     await ctx.send(f"Positions {', '.join(map(str, available)).rstrip(', ')} are available.")
 
 ##### Phase 2 commands:
-@bot.command(help="Choose the given set (e.g. \'XLN\' or Ixalan)")
+@bot.command(help="Choose the given set. (e.g. \'XLN\' or Ixalan)")
 async def choose_set(ctx, *, arg): 
     global sess, sheet, client
     if sess == None or sess.phase != 2:
