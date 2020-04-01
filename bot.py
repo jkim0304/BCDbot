@@ -402,7 +402,8 @@ async def sets_with(ctx, *, arg):
     if len(args) == 1:
         for card_name_index in results:
             result_string = ', '.join(set(results[card_name_index]))
-            await ctx.send(f'{card_name} is in: {result_string}.' )
+            if result_string:
+                await ctx.send(f'{card_name} is in: {result_string}.' )
     
     elif len(args) > 1:
         # if not everything was found
