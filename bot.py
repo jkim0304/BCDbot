@@ -425,7 +425,7 @@ async def sets_with(ctx, *, arg):
             ctx.send('No results.')
         else:
             intersection_str = ", ".join(intersection)
-            ctx.send('Sets containing all the cards in query: {intersection_str}.')
+            ctx.send(f'Sets containing all the cards in query: {intersection_str}.')
 
 
 @bot.command(help='Gives the player who has the set with the given name.')
