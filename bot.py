@@ -10,8 +10,6 @@ import utils
 import config as cfg
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
-#geoff added
 import ssl
 from urllib.error import HTTPError
 
@@ -283,7 +281,7 @@ async def choose_set(ctx, *, arg):
     next_player = sess.players[sess.curr_player]
 
     while next_player.next_sets:
-        next_set = next_player.next_sets.pop[0]
+        next_set = next_player.next_sets.pop(0)
         if not utils.check_legality(sess, next_player, next_set):
             await ctx.send(f'{ctx.guild.get_member(next_player.uid).mention} your queued pick is invalid. Please choose a new set.')
             return
@@ -315,6 +313,17 @@ async def choose_next_sets(ctx, *, arg):
     player.next_sets = set_list
 
     await ctx.send(f'Set {set_list} as your next picks.')
+
+@bot.command(help="Clears the list of sets picked in advance with '>choose_next_sets'.")
+async def clear_next_sets(ctx):
+    global sess
+    if sess == None or sess.phase != 2:
+        return
+    pindex = utils.uid_to_pindex(sess, ctx.author.id)
+    player = sess.players[pindex]
+    player.next_sets = []
+    
+    await ctx.send("Cleared next_sets.")
 
 @bot.command(help='Gives a list of sets available to the player.')
 async def my_available_sets(ctx): 
@@ -429,9 +438,7 @@ async def who_has(ctx, *, arg):
 
     if set_name in sess.taken:
         owner_name = sess.taken[set_name]
-        owner_pindex = utils.name_to_pindex(sess, owner_name)
-        owner = ctx.guild.get_member(sess.players[owner_pindex].uid)
-        await ctx.send(f'{owner.mention} has {set_name}.')
+        await ctx.send(f'{owner_name} has {set_name}.')
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
 
