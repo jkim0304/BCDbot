@@ -532,6 +532,56 @@ async def on_reaction_add(reaction, user):
         await message.delete()
         await channel.send(trade_string + ' has been declined.')
 
+@bot.command(help='Forces trading one set for another set.')
+@commands.is_owner()
+async def force_trade(ctx, *, arg): 
+    global sess, sheet, client
+    if sess == None or sess.phase != 2:
+        return
+        
+    sets = [x.strip() for x in arg.split(',')]
+    if len(sets) < 2:
+        await ctx.send('Please input a second set. (\">propose_trade set1, set2\")')
+        return
+
+    set1 = utils.code_to_name(sets[0])
+    set2 = utils.code_to_name(sets[1])
+    if set1 not in sess.taken:
+        await ctx.send(f'Invalid trade. No one has taken {set1} yet.')
+        return
+    if set2 not in sess.taken:
+        await ctx.send(f'Invalid trade. No one has taken {set2} yet.')
+        return
+
+    p1_pindex = utils.name_to_pindex(sess, sess.taken[set1])
+    player1 = sess.players[p1_pindex]
+    p2_pindex = utils.name_to_pindex(sess, sess.taken[set2])
+    player2 = sess.players[p2_pindex]
+
+    p1_can_have_s2 = utils.check_legality(sess, player1, set2, trade_sets=(set1, set2))
+    p2_can_have_s1 = utils.check_legality(sess, player2, set1, trade_sets=(set1, set2))
+    if not (p1_can_have_s2 and p2_can_have_s1):
+        await ctx.send('The trade is invalid.')
+        return
+
+    sess.taken[set2] = player1.name
+    sess.taken[set1] = player2.name
+
+    player1.sets.remove(set1)
+    player2.sets.remove(set2)
+    player1.sets.add(set2)
+    player2.sets.add(set1)
+
+    client.login()
+    ws = sheet.worksheet(sess.name)
+    set1_cells = ws.findall(set1)
+    set2_cells = ws.findall(set2)
+    for cell in set1_cells:
+        ws.update_cell(cell.row, cell.col, set2)
+    for cell in set2_cells:
+        ws.update_cell(cell.row, cell.col, set1)
+
+    await ctx.send('The trade has been accepted and processed.')
     
 ##### Phase agnostic commands:
 @bot.command(help='Lists bot info.')
