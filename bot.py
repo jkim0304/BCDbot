@@ -246,7 +246,8 @@ async def choose_set(ctx, *, arg):
     global sess, sheet, client
     if sess == None or sess.phase != 2:
         return
-    if utils.uid_to_pindex(sess, ctx.author.id) != sess.curr_player:
+    pindex = utils.uid_to_pindex(sess, ctx.author.id)
+    if pindex != sess.curr_player:
         await ctx.send('It is not your turn.')
         return
     set_name = arg
@@ -255,7 +256,6 @@ async def choose_set(ctx, *, arg):
         await ctx.send(f'{chosen_set} is not a legal set.')
         return
 
-    pindex = utils.uid_to_pindex(sess, ctx.author.id)
     player = sess.players[pindex]
 
     if not utils.check_legality(sess, player, chosen_set):
@@ -266,6 +266,52 @@ async def choose_set(ctx, *, arg):
             await ctx.send(f'Sorry, that set is taken by {owner.mention}.')
         else:
             await ctx.send(f'Sorry, the set exclusion rule prevents you from taking {chosen_set}.')
+        return
+
+    sess.taken[chosen_set] = player.name
+    player.sets.add(chosen_set)
+    client.login()
+    utils.update_gsheet(sess, sheet, player.name, chosen_set)
+    await ctx.send('Choice accepted.')
+
+    phase_over = utils.increment_curr_player(sess)
+    if phase_over:
+        await ctx.send('Set draft complete. Enjoy your matches!')
+        return
+    next_player = sess.players[sess.curr_player]
+
+    next_player = ctx.guild.get_member(sess.players[sess.curr_player].uid)
+    await ctx.send(f'{next_player.mention} please choose a set. (\">choose_set x\")')
+
+#TODO: Clean up redundant code (figure out how to permission lock this as an addition to >choose_set)
+@bot.command(help="Force user to choose the given set.")
+@commands.is_owner()
+async def force_choose_set(ctx, *, arg): 
+    global sess, sheet, client
+    if sess == None or sess.phase != 2:
+        return
+    arg_list = [x.strip() for x in arg.split(',')]
+    user_name = arg_list[0]
+    set_name = arg_list[1]
+    pindex = utils.name_to_pindex(sess, user_name)
+    if pindex != sess.curr_player:
+        await ctx.send("It is not that player's turn.")
+        return
+    chosen_set = utils.code_to_name(set_name)
+    if chosen_set not in sess.sets:
+        await ctx.send(f'{chosen_set} is not a legal set.')
+        return
+
+    player = sess.players[pindex]
+
+    if not utils.check_legality(sess, player, chosen_set):
+        if chosen_set in sess.taken.keys():
+            owner_name = sess.taken[chosen_set]
+            owner_pindex = utils.name_to_pindex(sess, owner_name)
+            owner = ctx.guild.get_member(sess.players[owner_pindex].uid)
+            await ctx.send(f'Sorry, that set is taken by {owner.mention}.')
+        else:
+            await ctx.send(f'Sorry, the set exclusion rule prevents that player from taking {chosen_set}.')
         return
 
     sess.taken[chosen_set] = player.name
