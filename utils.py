@@ -95,7 +95,6 @@ def dict_to_session(dct):
         player = classes.Player(p['name'])
         player.uid = p['uid']
         player.sets = set(p['sets'])
-        player.next_sets = p['next_sets']
         session.players.append(player)
     session.pick_draft = dct['pick_draft']
     session.exclusives = dct['exclusives']
