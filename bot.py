@@ -447,6 +447,24 @@ async def who_has(ctx, *, arg):
     else:
         await ctx.send(f'No one has chosen {set_name} yet.')
 
+@bot.command(help='Gives the list of sets owned by the player.')
+async def my_sets(ctx):
+    global sess
+    if sess == None or sess.phase < 2:
+        return
+    pindex = utils.uid_to_pindex(sess, ctx.author.id)
+    owned = sess.players[pindex].sets
+    await ctx.send(f'Your sets: {owned}')
+
+@bot.command(help='Gives the list of sets owned by the given player.')
+async def player_sets(ctx, name: str):
+    global sess
+    if sess == None or sess.phase < 2:
+        return
+    pindex = utils.name_to_pindex(sess, name)
+    owned = sess.players[pindex].sets
+    await ctx.send(f"{name}'s sets: {owned}")
+
 @bot.command(help='Proposes trading one set for another set.')
 async def propose_trade(ctx, *, arg): 
     global sess
@@ -538,7 +556,7 @@ async def force_trade(ctx, *, arg):
     global sess, sheet, client
     if sess == None or sess.phase != 2:
         return
-        
+
     sets = [x.strip() for x in arg.split(',')]
     if len(sets) < 2:
         await ctx.send('Please input a second set. (\">propose_trade set1, set2\")')
