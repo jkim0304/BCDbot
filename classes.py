@@ -20,7 +20,6 @@ class Player:
         self.name = name
         self.uid = -1
         self.sets = set()
-        self.next_sets = []
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
