@@ -11,6 +11,7 @@ import config as cfg
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import ssl
+from collections import OrderedDict
 from urllib.error import HTTPError
 
 bot = commands.Bot(command_prefix='>', description='I am a bot that manages Block Constructed Drafts.')
@@ -355,7 +356,7 @@ async def banned_list(ctx):
         return
     await ctx.send('; '.join(sess.banlist).rstrip('; '))    
 
-@bot.command(help='Shows what common cards are in each set')
+@bot.command(help='Shows what impactful cards are in each set; usage: cards_in setname')
 async def cards_in(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 2
@@ -364,6 +365,28 @@ async def cards_in(ctx, *, arg):
         ctx.send(f'{arg} is not recognized as a set')
         return
     else:
+        cardindex = utils.getCardIndex()
+        clumpscores = utils.getClumpScores()
+        legacy_unbans = clumpscores[arg]['legacy_unbans']
+        top_cards = clumpscores[arg]['top_cards']
+        clumps = clumpscores[arg]['clumps']
+
+
+        card_list = list(legacy_unbans)
+        for card in top_cards:
+            if card not in card_list:
+                card_list.append(card)
+
+        # Sorted
+        for clump in clumps:
+            for card in clumps[0]:
+                if card not in card_list:
+                    card_list.append(card)
+
+        # all impactful cards appended, TODO: embed art
+
+        message = ", ".join(card_list)
+        await ctx.send(message)
         return 
 
 @bot.command(help='Looks up which sets have a particular card.')
@@ -396,15 +419,14 @@ async def sets_with(ctx, *, arg):
                     # Discard the search result if its not from a set we're playing with
                     if card['set_name'] not in sess.sets:
                         continue
-
                     # Make a new entry for a card we haven't seen yet
                     elif card['name'] not in results:
                         results[card['name']] = set()
-                    
                     elif card['set_name'] in available:
                         results[card['name']].add(card['set_name'] + " (available)")
                     elif card['set_name'] not in available: 
                         results[card['name']].add(card['set_name'] + " (unavailable)")
+
                         
         except HTTPError:
             await ctx.send('Scryfall lookup failed. Check spelling.')
