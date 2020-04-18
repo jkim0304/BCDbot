@@ -355,6 +355,17 @@ async def banned_list(ctx):
         return
     await ctx.send('; '.join(sess.banlist).rstrip('; '))    
 
+@bot.command(help='Shows what common cards are in each set')
+async def cards_in(ctx, *, arg):
+    global sess
+    if sess == None or sess.phase != 2
+        return
+    if arg not in sess.sets:
+        ctx.send(f'{arg} is not recognized as a set')
+        return
+    else:
+        return 
+
 @bot.command(help='Looks up which sets have a particular card.')
 async def sets_with(ctx, *, arg):
     global sess
@@ -422,6 +433,7 @@ async def sets_with(ctx, *, arg):
             
         # What results did we find
         intersection = set(results[next(iter(results))])
+
         for card in results:
            
             intersection = intersection.intersection(results[card])
