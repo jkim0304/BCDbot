@@ -9,6 +9,20 @@ code_dict = json.load(open('set_code_dict.json'))
 #master list of set names
 master_list = code_dict.values()
 
+with open("data/card_index.json", "r") as cif:
+     card_index = json.load(cif)
+     cif.close()
+
+with open("data/clumpscores_db.json", "r") as csf:
+     clumpscores = json.load(csf)
+     csf.close()
+
+def getCardIndex():
+    return cif
+
+def getClumpScores():
+    return clumpscores
+
 #session JSON
 def save_session(session, path):
     """Saves session to file at path."""
