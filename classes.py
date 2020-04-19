@@ -13,6 +13,7 @@ class Session:
         self.round_num = 1
         self.pick_num = 1
         self.curr_player = 0
+        self.dl_submissions = {} #player:link
         self.phase = 0
 
 class Player:
@@ -20,6 +21,7 @@ class Player:
         self.name = name
         self.uid = -1
         self.sets = set()
+        self.decklist = ''
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -41,7 +43,8 @@ class CustomEncoder(json.JSONEncoder):
                 'num_picks': obj.num_picks,
                 'round_num': obj.round_num,
                 'pick_num' : obj.pick_num,
-                'curr_player': obj.curr_player,
+                'curr_player' : obj.curr_player,
+                'dl_submissions' : obj.dl_submissions,
                 'phase': obj.phase
             }
             return sess_dict

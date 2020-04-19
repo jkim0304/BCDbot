@@ -109,6 +109,7 @@ def dict_to_session(dct):
         player = classes.Player(p['name'])
         player.uid = p['uid']
         player.sets = set(p['sets'])
+        player.decklist = p['decklist']
         session.players.append(player)
     session.pick_draft = dct['pick_draft']
     session.exclusives = dct['exclusives']
@@ -117,6 +118,7 @@ def dict_to_session(dct):
     session.round_num = dct['round_num']
     session.pick_num = dct['pick_num']
     session.curr_player = dct['curr_player']
+    session.dl_submissions = dct['dl_submissions']
     session.phase = dct['phase']
     return session
 
