@@ -362,7 +362,7 @@ async def banned_list(ctx):
 @bot.command(help='Shows what impactful cards are in each set; usage: cards_in setname')
 async def cards_in(ctx, *, arg):
     global sess
-    if sess == None or sess.phase != 2
+    if sess == None or sess.phase != 2:
         return
     if arg not in sess.sets:
         ctx.send(f'{arg} is not recognized as a set')
