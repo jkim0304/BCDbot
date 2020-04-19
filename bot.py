@@ -749,6 +749,7 @@ async def state(ctx):
         print(f'Current player: {sess.curr_player}')
         print(f'Current phase: {sess.phase}')
         print(f'Pick draft: {sess.pick_draft}')
+        print(f'Submitted: {sess.dl_submissions.keys()}')
 
 @bot.command(help='Gives current session phase.')
 @commands.is_owner()
