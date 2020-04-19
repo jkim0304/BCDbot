@@ -659,6 +659,7 @@ async def submit_decklist(ctx, link):
         await ctx.send('Decklist accepted.')
 
 @bot.command(help="Gives the player's submitted decklist link.")
+async def submitted_decklist(ctx):
     global sess 
     if sess == None or sess.phase != 3:
         return
