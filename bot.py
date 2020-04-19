@@ -372,7 +372,7 @@ async def cards_in(ctx, *, arg):
         clumpscores = utils.getClumpScores()
         legacy_unbans = clumpscores[arg]['legacy_unbans']
         top_cards = clumpscores[arg]['top_cards']
-        clumps = clumpscores[arg]['clumps']
+        clumps = clumpscores[arg]['clumps'][0]
 
 
         card_list = list(legacy_unbans)
