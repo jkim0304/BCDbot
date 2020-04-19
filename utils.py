@@ -18,7 +18,7 @@ with open("data/clumpscores_db.json", "r") as csf:
      csf.close()
 
 def getCardIndex():
-    return cif
+    return card_index
 
 def getClumpScores():
     return clumpscores

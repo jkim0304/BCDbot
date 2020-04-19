@@ -419,12 +419,14 @@ async def sets_with(ctx, *, arg):
                     # Discard the search result if its not from a set we're playing with
                     if card['set_name'] not in sess.sets:
                         continue
+
                     # Make a new entry for a card we haven't seen yet
-                    elif card['name'] not in results:
+                    if card['name'] not in results:
                         results[card['name']] = set()
-                    elif card['set_name'] in available:
+
+                    if card['set_name'] in available:
                         results[card['name']].add(card['set_name'] + " (available)")
-                    elif card['set_name'] not in available: 
+                    else:
                         results[card['name']].add(card['set_name'] + " (unavailable)")
 
                         
@@ -440,7 +442,7 @@ async def sets_with(ctx, *, arg):
         for card_name_index in results:
             result_string = ', '.join(set(results[card_name_index]))
             if result_string:
-                await ctx.send(f'{card_name} is in: {result_string}.' )
+                await ctx.send(f'{card_name_index} is in: {result_string}.' )
     
     elif len(args) > 1:
         # if not everything was found
