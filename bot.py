@@ -664,7 +664,7 @@ async def submitted_decklist(ctx):
     if sess == None or sess.phase != 3:
         return
     player = sess.players[utils.uid_to_pindex(sess, ctx.author.id)]
-    await ctx.send(player.decklist)
+    await ctx.send(f'Submitted decklist: {player.decklist}')
 
 #TODO: Have bot remember session's guild at setup so this isn't necessary
 @bot.command(help='Lists submitted decklists. (Temp. command)')
