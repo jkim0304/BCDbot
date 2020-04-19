@@ -653,8 +653,8 @@ async def submit_decklist(ctx, link):
         # Move to phase 4
         sess.phase = 4
         #TODO: Fix guild setup so this isn't necessary
-        await bot.send_message(bot.owner_id, 'Players done submitting decklists.')
         await ctx.send('Decklist accepted. Please call >list_decklists in the channel.')
+        await bot.get_user(bot.owner_id).send('Players done submitting decklists.')
     else:
         await ctx.send('Decklist accepted.')
 
