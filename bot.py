@@ -147,8 +147,9 @@ async def finish_setup(ctx):
     elif utils.get_unclaimed_users_str(sess):
         await ctx.send(f'Players left unclaimed: {utils.get_unclaimed_users_str(sess)}. (\">claim_user name\")')
     else:
-        sess.pick_draft = [None] * len(sess.players)
+        # Move to phase 1
         sess.phase = 1
+        sess.pick_draft = [None] * len(sess.players)
         sess.curr_player = 0
         await ctx.send('Beginning pick order draft.')
         first_player = ctx.guild.get_member(sess.players[0].uid)
@@ -277,6 +278,8 @@ async def choose_set(ctx, *, arg):
 
     phase_over = utils.increment_curr_player(sess)
     if phase_over:
+        # Move to phase 3
+        sess.phase = 3
         await ctx.send('Set draft complete. Enjoy your matches!')
         return
     next_player = sess.players[sess.curr_player]
@@ -636,7 +639,40 @@ async def force_trade(ctx, *, arg):
         ws.update_cell(cell.row, cell.col, set1)
 
     await ctx.send('The trade has been accepted and processed.')
-    
+
+##### Phase 3 commands:
+@bot.command(help='Submits the given link as decklist.')
+async def submit_decklist(ctx, link):
+    global sess 
+    if sess == None or sess.phase != 3:
+        return
+    player = sess.players[utils.uid_to_pindex(sess, ctx.author.id)]
+    player.decklist = link
+    sess.dl_submissions[player.name] = link
+    if len(sess.players) == len(sess.dl_submissions):
+        # Move to phase 4
+        sess.phase = 4
+        #TODO: Fix guild setup so this isn't necessary
+        await bot.send_message(bot.owner_id, 'Players done submitting decklists.')
+        await ctx.send('Decklist accepted. Please call >list_decklists in the channel.')
+    else:
+        await ctx.send('Decklist accepted.')
+
+@bot.command(help="Gives the player's submitted decklist link.")
+    global sess 
+    if sess == None or sess.phase != 3:
+        return
+    player = sess.players[utils.uid_to_pindex(sess, ctx.author.id)]
+    await ctx.send(player.decklist)
+
+#TODO: Have bot remember session's guild at setup so this isn't necessary
+@bot.command(help='Lists submitted decklists. (Temp. command)')
+async def list_decklists(ctx):
+    global sess 
+    if sess == None or sess.phase != 4:
+        return
+    await ctx.send('\n '.join(sess.dl_submissions).items())
+
 ##### Phase agnostic commands:
 @bot.command(help='Lists bot info.')
 async def info(ctx):
