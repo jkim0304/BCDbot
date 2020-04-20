@@ -374,7 +374,7 @@ async def cards_in(ctx, *, arg):
             return
         else:
             sname = utils.encode(arg)
-            fname = "images"+sname+".jpg"
+            fname = "images/"+sname+".jpg"
             if not os.path.isfile(fname):
                 await ctx.send(f'{arg} has no notable cards')
                 return
