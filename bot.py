@@ -365,14 +365,13 @@ async def cards_in(ctx, *, arg):
     if sess == None or sess.phase != 2:
         return
     if arg not in sess.sets:
-        ctx.send(f'{arg} is not recognized as a set')
+        await ctx.send(f'{arg} is not recognized as a set')
         return
     else:
-        cardindex = utils.getCardIndex()
         clumpscores = utils.getClumpScores()
         legacy_unbans = clumpscores[arg]['legacy_unbans']
         top_cards = clumpscores[arg]['top_cards']
-        clumps = clumpscores[arg]['clumps'][0]
+        clumps = clumpscores[arg]['clumps']
 
 
         card_list = list(legacy_unbans)
@@ -382,7 +381,7 @@ async def cards_in(ctx, *, arg):
 
         # Sorted
         for clump in clumps:
-            for card in clumps[0]:
+            for card in clump[0]:
                 if card not in card_list:
                     card_list.append(card)
 
@@ -456,7 +455,7 @@ async def sets_with(ctx, *, arg):
                     fmt.append(card)
 
             found_cards = ", ".join(fmt)
-            ctx.send(f'Results were only found for: {found_cards}.')
+            await ctx.send(f'Results were only found for: {found_cards}.')
             
         # What results did we find
         intersection = set(results[next(iter(results))])
@@ -466,10 +465,10 @@ async def sets_with(ctx, *, arg):
             intersection = intersection.intersection(results[card])
 
         if len(intersection) == 0:
-            ctx.send('No results.')
+            await ctx.send('No results.')
         else:
             intersection_str = ", ".join(intersection)
-            ctx.send(f'Sets containing all the cards in query: {intersection_str}.')
+            await ctx.send(f'Sets containing all the cards in query: {intersection_str}.')
 
 
 @bot.command(help='Gives the player who has the set with the given name.')
@@ -672,7 +671,7 @@ async def list_decklists(ctx):
     global sess 
     if sess == None or sess.phase != 4:
         return
-    await ctx.send('\n '.join(sess.dl_submissions).items())
+    await ctx.send('\n '.join(sess.dl_submissions.items()))
 
 ##### Phase agnostic commands:
 @bot.command(help='Lists bot info.')
