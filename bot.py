@@ -378,9 +378,15 @@ async def cards_in(ctx, *, arg):
             if not os.path.isfile(fname):
                 await ctx.send(f'{arg} has no notable cards')
                 return
-
+            
             #Embed the image
-            imgfile = discord.File(arg, filename=fname)
+            try:
+                f = open(fname, "rb")
+                imgfile = discord.File(f)
+                f.close()
+            except Exception:
+                await ctx.send("Discord is definitely fucking with you now.")
+                return
             await ctx.send(file = imgfile)
             return
     else: 
