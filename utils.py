@@ -17,6 +17,15 @@ with open("data/clumpscores_db.json", "r") as csf:
      clumpscores = json.load(csf)
      csf.close()
 
+def encode_setname(unsanitized):
+    sanitized = unsanitized.replace(" ", "_space_")
+    sanitized = sanitized.replace(".", "_dot_")
+    sanitized = sanitized.replace("'", "_apostrophe_")
+    sanitized = sanitized.replace(":", "_colon_")
+    sanitized = sanitized.replace("(", "_leftparens_")
+    sanitized = sanitized.replace(")", "_rightparens_")
+    return sanitized
+    
 def getCardIndex():
     return card_index
 

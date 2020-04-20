@@ -13,6 +13,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 import ssl
 from collections import OrderedDict
 from urllib.error import HTTPError
+import os.path
 
 bot = commands.Bot(command_prefix='>', description='I am a bot that manages Block Constructed Drafts.')
 
@@ -359,37 +360,56 @@ async def banned_list(ctx):
         return
     await ctx.send('; '.join(sess.banlist).rstrip('; '))    
 
-@bot.command(help='Shows what impactful cards are in each set; usage: cards_in setname')
+@bot.command(help='Shows what impactful cards are in each set; usage: cards_in [-i] setname')
 async def cards_in(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 2:
         return
-    if arg not in sess.sets:
-        await ctx.send(f'{arg} is not recognized as a set')
-        return
-    else:
-        clumpscores = utils.getClumpScores()
-        legacy_unbans = clumpscores[arg]['legacy_unbans']
-        top_cards = clumpscores[arg]['top_cards']
-        clumps = clumpscores[arg]['clumps']
+    # check image mode
+    if arg[0:2] == "-i":
+        # skip the space and read the setname
+        arg = arg[3:]
+        if arg not in sess.sets:
+            await ctx.send(f'{arg} is not recognized as a set')
+            return
+        else:
+            sname = utils.encode(arg)
+            fname = "images"+sname+".jpg"
+            if not os.path.isfile(fname):
+                await ctx.send(f'{arg} has no notable cards')
+                return
+
+            #Embed the image
+            imgfile = discord.File(arg, filename=fname)
+            await ctx.send(file = imgfile)
+            return
+    else: 
+        if arg not in sess.sets:
+            await ctx.send(f'{arg} is not recognized as a set')
+            return
+        else:
+            clumpscores = utils.getClumpScores()
+            legacy_unbans = clumpscores[arg]['legacy_unbans']
+            top_cards = clumpscores[arg]['top_cards']
+            clumps = clumpscores[arg]['clumps']
 
 
-        card_list = list(legacy_unbans)
-        for card in top_cards:
-            if card not in card_list:
-                card_list.append(card)
-
-        # Sorted
-        for clump in clumps:
-            for card in clump[0]:
+            card_list = list(legacy_unbans)
+            for card in top_cards:
                 if card not in card_list:
                     card_list.append(card)
 
-        # all impactful cards appended, TODO: embed art
+            # Sorted
+            for clump in clumps:
+                for card in clump[0]:
+                    if card not in card_list:
+                        card_list.append(card)
 
-        message = ", ".join(card_list)
-        await ctx.send(message)
-        return 
+            # all impactful cards appended, TODO: embed art
+
+            message = ", ".join(card_list)
+            await ctx.send(message)
+            return 
 
 @bot.command(help='Looks up which sets have a particular card.')
 async def sets_with(ctx, *, arg):
