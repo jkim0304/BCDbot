@@ -373,7 +373,7 @@ async def cards_in(ctx, *, arg):
             await ctx.send(f'{arg} is not recognized as a set')
             return
         else:
-            sname = utils.encode(arg)
+            sname = utils.encode_setname(arg)
             fname = "images/"+sname+".jpg"
             if not os.path.isfile(fname):
                 await ctx.send(f'{arg} has no notable cards')
