@@ -223,6 +223,11 @@ async def choose_position(ctx, pos: int):
             # Move to phase 2
             sess.phase = 2
             sess.curr_player = 0
+            
+            # CREATE EMPTY PICKS FILE: FACILITATES AUTOMATED WEB GUI
+            utils.make_empty_picks_file()
+            # # # # # # # # # # #  # # # # # #
+
             await ctx.send('Beginning set draft.')
             first_player = ctx.guild.get_member(sess.players[0].uid)
             await ctx.send(f'{first_player.mention} please choose a set. (\">choose_set x\")')
@@ -275,6 +280,11 @@ async def choose_set(ctx, *, arg):
     player.sets.add(chosen_set)
     client.login()
     utils.update_gsheet(sess, sheet, player.name, chosen_set)
+
+    # TODO: WRITE DATA TO JSON FILE FOR THE SETS VISUALIZER GUI IF WE WANT BOT TO HOST
+    utils.update_picks_file(player.name, chosen_set)
+    # # # # # # # # # # # # # # # #
+    
     await ctx.send('Choice accepted.')
 
     phase_over = utils.increment_curr_player(sess)
