@@ -41,8 +41,9 @@ for arg in clumpscores:
 
 	widths, heights = zip(*(i.size for i in images))
 
-	total_width = sum(widths)
-	total_height = heights[0]*math.ceil(len(widths)/4)
+	total_width = widths[0]*5
+	total_height = heights[0]*math.ceil(len(widths)/5)
+
 
 	new_im = Image.new('RGB', (total_width, total_height))
 
@@ -54,7 +55,7 @@ for arg in clumpscores:
 		i += 1
 		new_im.paste(im, (x_offset,y_offset))
 		x_offset += im.size[0]
-		if i % 4 == 0:
+		if i % 5 == 0:
 	  		y_offset += im.size[1]
 	  		x_offset = 0
 	  	
