@@ -1,4 +1,4 @@
-# BCDbot
+## BCDbot
 A Discord bot for automating Block Constructed Drafts, a fantasy football-style custom format for the game Magic: the Gathering.
 Manages players, picks, and time banks and offers QoL tools such as generating legal set choices. 
 Issue commands prefixed with '>' (e.g. ">choose_set Ixalan").

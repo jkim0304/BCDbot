@@ -7,7 +7,6 @@ import time
 ssl._create_default_https_context = ssl._create_unverified_context
 
 ci = utils.getCardIndex()
-arg = "Modern Horizons"
 clumpscores = utils.getClumpScores()
 
 for arg in clumpscores:

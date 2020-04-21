@@ -360,7 +360,6 @@ async def banned_list(ctx):
         return
     await ctx.send('; '.join(sess.banlist).rstrip('; '))    
 
-<<<<<<< HEAD
 @bot.command(help='[-i image mode] Shows what impactful cards are in the set.')
 async def cards_in(ctx, *, arg):
     global sess
@@ -623,7 +622,6 @@ async def who_has(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 2:
         return
->>>>>>> 58a743d8cfeeaa9037b319a8bb4eb1ecdc398d8a
     
     set_name = utils.code_to_name(arg)
 
