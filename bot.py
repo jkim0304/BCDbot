@@ -360,7 +360,7 @@ async def banned_list(ctx):
         return
     await ctx.send('; '.join(sess.banlist).rstrip('; '))    
 
-@bot.command(help='Shows what impactful cards are in each set; usage: cards_in [-i] setname')
+@bot.command(help='[-i image mode] Shows what impactful cards are in the set.')
 async def cards_in(ctx, *, arg):
     global sess
     if sess == None or sess.phase != 2:
@@ -399,7 +399,6 @@ async def cards_in(ctx, *, arg):
             top_cards = clumpscores[arg]['top_cards']
             clumps = clumpscores[arg]['clumps']
 
-
             card_list = list(legacy_unbans)
             for card in top_cards:
                 if card not in card_list:
@@ -412,7 +411,6 @@ async def cards_in(ctx, *, arg):
                         card_list.append(card)
 
             # all impactful cards appended, TODO: embed art
-
             message = ", ".join(card_list)
             await ctx.send(message)
             return 
