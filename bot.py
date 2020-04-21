@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 
 import discord
 from discord.ext import commands, tasks
@@ -411,9 +411,13 @@ async def cards_in(ctx, *, arg):
                         card_list.append(card)
 
             # all impactful cards appended, TODO: embed art
-            message = ", ".join(card_list)
-            await ctx.send(message)
-            return 
+            if len(card_list) == 0:
+                await ctx.send(f'{arg} has no notable cards')
+                return
+            else:
+                message = ", ".join(card_list)
+                await ctx.send(message)
+                return 
 
 @bot.command(help='Looks up which sets have a particular card.')
 async def sets_with(ctx, *, arg):
