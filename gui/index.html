@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html lang = "en">
+<head>
+	<title>MTG Sets Visualizer</title>
+	<meta charset = "UTF-8" />
+	<script src="js/jq.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/stylest.css">
+</head>
+<body>
+	<div id="set-data-overlay-container"><table id="set-data-table">
+		<tbody>
+		</tbody>
+	</table></div>
+	
+	<div id="player-names-container"><table id="player-names" cellspacing="10">
+		<tbody>
+		</tbody>
+	</table></div>
+	<div id="sets-table-container">
+		<div id="slide-container"><form>
+
+			<label for="cardsize">Card size</label><br>
+ 			<input type="range" min="1" max="200" value="180" id="cardsize"> 
+		</form></div>
+		<table id="sets-table">
+			<caption>Legal MTG Sets</caption>
+				<tbody>
+				</tbody>
+		</table>
+	</div>
+</body>
+<script src="js/card_index.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/players_picks.js"></script>
+<script src="js/clumpscores_db.js"></script>
+<script src="js/clumpscores_sorted.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/draw.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	drawPlayersNames();
+	drawSetsTable(5);
+	$('#sets-table').on('click', '.mtgset', function(event){ 
+		resetSelection(); 
+		drawSetData(event); 
+	});
+
+	$('#player-names').on('click', '.name', function(event){
+		drawPlayerClumps(event, 10);
+	});
+	$('#slide-container').on('input', '#cardsize', function(event){
+		console.log("trigger")
+		svalue = parseInt(this.value)
+		$('#set-data-table td img').each(function(){
+			console.log("css appliying ")
+			$(this).css({'height': svalue + 'px'});
+		});
+	});
+
+	
+});
+	
+</script>
+</html>

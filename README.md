@@ -4,6 +4,10 @@ Manages players, picks, and time banks and offers QoL tools such as generating l
 Issue commands prefixed with '>' (e.g. ">choose_set Ixalan").
 
 
+
+## CAVEAT: 
+The data sets being used in this file, namely the entire data directory and gui/js/clumpscores_db.js and gui/js/clumpscores_sorted.js are not generated from code within this repository. To learn more, see Geoff's BlockConstructed Planner project at https://github.com/geoffreylee/BlockConstructedPlanner to generate the necessary data for a new ruleset.
+
 ## Commands:
 
 ### General:
