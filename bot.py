@@ -620,6 +620,9 @@ async def on_reaction_add(reaction, user):
             for cell in set2_cells:
                 ws.update_cell(cell.row, cell.col, set1)
 
+            # We have to do the same thing now to our json file:
+            utils.trade_picks_file(player1.name, set1, player2.name, set2)
+            # # # # # # # # # # # # # # # 
             await message.delete()
             await channel.send(trade_string + ' has been accepted and processed.')
     if reaction.emoji == '\N{THUMBS DOWN SIGN}': 
