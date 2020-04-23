@@ -8,6 +8,11 @@ Issue commands prefixed with '>' (e.g. ">choose_set Ixalan").
 ## CAVEAT: 
 The data sets being used in this file, namely the entire data directory and gui/js/clumpscores_db.js and gui/js/clumpscores_sorted.js are not generated from code within this repository. To learn more, see Geoff's BlockConstructed Planner project at https://github.com/geoffreylee/BlockConstructedPlanner to generate the necessary data for a new ruleset.
 
+## SECURITY VULNERABILITIES:
+The python server and shell script is not for "production" in any sort of public sense. It was developed for
+trusted friends who will not use the scripts to attack the host computer. If you want to run the draft publically,
+instead replace the webserver with a production webserver. But make sure utils.py is set up to write data to the correct new location.
+
 ## Commands:
 
 ### General:
