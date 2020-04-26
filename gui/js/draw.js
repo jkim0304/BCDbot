@@ -143,10 +143,6 @@ function drawSetData(event) {
 		}
 		markup += "</tr>";
 		$('#set-data-table').append(markup);
-		$('#set-data-table td img').each(function(){
-			value = $('#cardsize')[0]['value'];
-			$(this).css({'height':value + 'px'});
-		});
 		already_seen.push(cards);
 		markup="<tr>";	
 	}
@@ -159,6 +155,10 @@ function drawSetData(event) {
 	}
 	markup += "</tr>";
 	$('#set-data-table').append(markup);
+	$('#set-data-table td img').each(function(){
+		value = $('#cardsize')[0]['value'];
+		$(this).css({'height':value + 'px'});
+	});
 }
 
 
