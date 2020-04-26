@@ -712,7 +712,7 @@ async def list_decklists(ctx):
     global sess 
     if sess == None or sess.phase != 4:
         return
-    await ctx.send('\n '.join(sess.dl_submissions.items()))
+    await ctx.send('\n '.join(map(str, sess.dl_submissions.items())))
 
 ##### Phase agnostic commands:
 @bot.command(help='Lists bot info.')
