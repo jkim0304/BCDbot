@@ -223,6 +223,11 @@ async def choose_position(ctx, pos: int):
             # Move to phase 2
             sess.phase = 2
             sess.curr_player = 0
+            
+            # CREATE EMPTY PICKS FILE: FACILITATES AUTOMATED WEB GUI
+            utils.make_empty_picks_file()
+            # # # # # # # # # # #  # # # # # #
+
             await ctx.send('Beginning set draft.')
             first_player = ctx.guild.get_member(sess.players[0].uid)
             await ctx.send(f'{first_player.mention} please choose a set. (\">choose_set x\")')
@@ -275,6 +280,11 @@ async def choose_set(ctx, *, arg):
     player.sets.add(chosen_set)
     client.login()
     utils.update_gsheet(sess, sheet, player.name, chosen_set)
+
+    # TODO: WRITE DATA TO JSON FILE FOR THE SETS VISUALIZER GUI IF WE WANT BOT TO HOST
+    utils.update_picks_file(player.name, chosen_set)
+    # # # # # # # # # # # # # # # #
+    
     await ctx.send('Choice accepted.')
 
     phase_over = utils.increment_curr_player(sess)
@@ -610,6 +620,9 @@ async def on_reaction_add(reaction, user):
             for cell in set2_cells:
                 ws.update_cell(cell.row, cell.col, set1)
 
+            # We have to do the same thing now to our json file:
+            utils.trade_picks_file(player1.name, set1, player2.name, set2)
+            # # # # # # # # # # # # # # # 
             await message.delete()
             await channel.send(trade_string + ' has been accepted and processed.')
     if reaction.emoji == '\N{THUMBS DOWN SIGN}': 

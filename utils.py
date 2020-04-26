@@ -165,3 +165,56 @@ def update_gsheet(session, sheet, player_name, chosen_set):
     player_col = 8 + name_to_pindex(session, player_name)
     pick_row = 1 + session.round_num
     ws.update_cell(pick_row, player_col, chosen_set)
+
+def make_empty_picks_file(players_array):
+    picks_data = dict()
+    for player_name in players_array:
+        picks_data[player_name] = list()
+
+    with open("picks_data.json", "w") as picks_data_f:
+        picks_data_f.write(json.dumps(picks_data))
+        picks_data_f.close()
+    export_picks_json()
+    return
+
+def update_picks_file(player_name, chosen_set):
+    with open("picks_data.json", "w") as picks_data_f:
+        picks_data = json.load(picks_data_f)
+        picks_data[player_name].append(chosen_set)
+        picks_data_f.write(json.dumps(picks_data))
+        picks_data_f.close()
+    export_picks_json()
+    return
+
+def exchange_helper(dummy_set, set1, set2):
+    if dummy_set == set1:
+        return set2
+    if dummy_set == set2:
+        return set1
+    else:
+        return dummy_set
+
+def export_picks_json():
+    with open("picks_data.json", "r") as picks_data_f:
+        picks_data = json.load(picks_data_f)
+        with open("gui/js/players_picks.js", "w") as picks_data_js:
+            picks_data_js.write("var players_picks=" + json.dumps(picks_data))
+            picks_data_js.close()
+        picks_data_f.close()
+    return 
+
+
+def trade_picks_file(player1, set1, player2, set2):
+    with open("picks_data.json", "w") as picks_data_f:
+        picks_data = json.load(picks_data_f)
+        new_p1_picks = [exchange_helper(x, set_1, set_2) for x in picks_data[player1]]
+        new_p2_picks = [exchange_helper(x, set_1, set_2) for x in picks_data[player2]]
+
+        picks_data[player1] = new_p1_picks
+        picks_data[player2] = new_p2_picks
+
+        picks_data_f.write(json.dumps(picks_data))
+        picks_data_f.close()
+    
+    export_picks_json()
+    return
