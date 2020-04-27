@@ -11,13 +11,9 @@ images:
 install: 
 	sudo yum -y install python3
 	sudo yum -y install golang
-	sudo yum -y install pip3
+	sudo yum -y install python3-pip
 	sudo yes | pip3 install pillow
 	sudo yes | pip3 install discord.py
 	sudo yes | pip3 install gspread
 	sudo yes | pip3 install ouath2client
 	mkdir images
-	python3 generate_clump_data.py
-	go build bcdserver.go
-
-	
