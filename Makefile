@@ -1,7 +1,6 @@
 run:
 	sudo ./bcdserver > bcdserver.log &
 	python3 bot.py > bot.log & 
-	disown -a
 
 server: 
 	go build bcdserver.go
