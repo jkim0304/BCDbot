@@ -8,7 +8,7 @@ import (
 
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./gui")))
-	err := http.ListenAndServe(":8000", nil)
+	err := http.ListenAndServe(":80", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
