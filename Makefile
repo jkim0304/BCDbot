@@ -15,5 +15,5 @@ install:
 	sudo yes | pip3 install pillow
 	sudo yes | pip3 install discord.py
 	sudo yes | pip3 install gspread
-	sudo yes | pip3 install ouath2client
+	sudo yes | pip3 install oauth2client
 	mkdir images
