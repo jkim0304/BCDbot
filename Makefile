@@ -6,7 +6,6 @@ server:
 	go build bcdserver.go
 
 images:
-	mkdir images
 	python3 generate_clump_data.py
 
 install: 
