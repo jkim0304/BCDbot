@@ -22,7 +22,6 @@ instead replace the webserver with a production webserver. But make sure utils.p
 * **save_session** - Saves the current session state.
 
 ### Setup:
-* **Make a folder called images in the root directory of the bot and run generate_clump_data.py
 * **new_session [session name]** - Starts a new session with the given name.
 * **set_num_picks [n]** - Sets the number of set picks for the session.
 * **set_starting_time [n]** - Sets the starting amount of time alloted to each player for picks.
