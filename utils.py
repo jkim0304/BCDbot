@@ -207,8 +207,8 @@ def export_picks_json():
 def trade_picks_file(player1, set1, player2, set2):
     with open("picks_data.json", "w") as picks_data_f:
         picks_data = json.load(picks_data_f)
-        new_p1_picks = [exchange_helper(x, set_1, set_2) for x in picks_data[player1]]
-        new_p2_picks = [exchange_helper(x, set_1, set_2) for x in picks_data[player2]]
+        new_p1_picks = [exchange_helper(x, set1, set2) for x in picks_data[player1]]
+        new_p2_picks = [exchange_helper(x, set1, set2) for x in picks_data[player2]]
 
         picks_data[player1] = new_p1_picks
         picks_data[player2] = new_p2_picks

@@ -225,7 +225,7 @@ async def choose_position(ctx, pos: int):
             sess.curr_player = 0
             
             # CREATE EMPTY PICKS FILE: FACILITATES AUTOMATED WEB GUI
-            utils.make_empty_picks_file()
+            utils.make_empty_picks_file(sess.players)
             # # # # # # # # # # #  # # # # # #
 
             await ctx.send('Beginning set draft.')
