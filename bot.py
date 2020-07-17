@@ -24,7 +24,7 @@ sess = None
 scope = ['https://spreadsheets.google.com/feeds']
 creds = ServiceAccountCredentials.from_json_keyfile_name('client_secret.json', scope)
 client = gspread.authorize(creds)
-sheet = client.open_by_url('https://docs.google.com/spreadsheets/d/1_USuohcwfDGw3EdX-lSZPsvrbFJnNE8TXK8IUU3t_JU/edit#gid=0')
+sheet = client.open_by_url(cfg.sheet_url)
 
 @bot.event
 async def on_ready():
